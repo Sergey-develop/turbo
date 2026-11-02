@@ -47,3 +47,29 @@
 @media(min-width:1024px) and (max-width:1279px){.hero h1{font-size:clamp(76px,8.2vw,105px)}}
 @media(min-width:768px) and (max-width:1023px){.hero-magnifier{left:66%;top:580px;width:180px;height:180px}}
 @media(max-width:767px){.hero-magnifier{left:57%;top:440px;width:110px;height:110px}.forbes h2{font-size:23px;letter-spacing:-.8px}.program-list li{min-height:158px}.speakers{padding-bottom:160px}.faq:before{background-size:100% 500px}}
+
+/* Speaker selection: details open on click, with a wider desktop card. */
+.speakers .speaker-group .speaker-grid{grid-template-columns:var(--speaker-columns)}
+.speaker-toggle{position:absolute;inset:0;z-index:3;border:0;border-radius:0;padding:0;background:transparent;cursor:pointer}
+.speaker-toggle:focus-visible{outline:2px solid var(--orange);outline-offset:-3px}
+.speaker-card.is-expanded img{width:65%;left:auto;right:0}
+.speaker-card.is-expanded .speaker-info{max-width:65%;background:linear-gradient(90deg,#111c,transparent)}
+.speaker-card .speaker-topic{font-size:24px;line-height:1.25;color:#aaa;margin-top:10px;max-width:340px}
+@media(min-width:1024px) and (max-width:1599px){.speaker-card .speaker-topic{font-size:18px}}
+@media(max-width:1023px){
+ .speakers .speaker-group .speaker-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+ .speaker-card.is-expanded img{width:58%}
+ .speaker-card .speaker-topic{font-size:16px;max-width:280px}
+}
+@media(max-width:767px){
+ .speaker-card .speaker-topic{font-size:14px;max-width:230px}
+ .speaker-card.is-expanded img{width:58%}
+}
+
+/* Smooth speaker expansion, including text height and portrait movement. */
+.speakers .speaker-group .speaker-grid{transition:grid-template-columns .36s cubic-bezier(.22,1,.36,1)}
+.speaker-card img{transition:width .36s cubic-bezier(.22,1,.36,1)}
+.speaker-topic-reveal{display:grid;grid-template-rows:0fr;opacity:0;transform:translateY(8px);margin-top:0;transition:grid-template-rows .36s cubic-bezier(.22,1,.36,1),opacity .24s ease,transform .36s cubic-bezier(.22,1,.36,1),margin-top .36s cubic-bezier(.22,1,.36,1)}
+.speaker-topic-clip{min-height:0;overflow:hidden}
+.speaker-card .speaker-topic{margin-top:0}
+.speaker-card.is-expanded .speaker-topic-reveal{grid-template-rows:1fr;opacity:1;transform:translateY(0);margin-top:10px}
