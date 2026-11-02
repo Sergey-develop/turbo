@@ -1,9 +1,8 @@
 import { onBeforeUnmount, onMounted } from 'vue'
 
 type Frames = Keyframe[] | ((element: HTMLElement) => Keyframe[])
-const easeOut = 'cubic-bezier(.23,1,.32,1)'
-const fadeUp: Keyframe[] = [{ opacity: 0, transform: 'translateY(6px)' }, { opacity: 1, transform: 'none' }]
-const fadeIn: Keyframe[] = [{ opacity: 0 }, { opacity: 1 }]
+const easeOut = 'cubic-bezier(.22,.61,.36,1)'
+const fadeUp: Keyframe[] = [{ opacity: 0, transform: 'translateY(14px)' }, { opacity: 1, transform: 'none' }]
 
 export function usePageMotion(): void {
   const animations = new Set<Animation>()
@@ -80,9 +79,9 @@ export function usePageMotion(): void {
         }
         observedTargets.delete(entry.target)
       }
-    }, { threshold: .01, rootMargin: '0px 0px 12% 0px' })
+    }, { threshold: .05, rootMargin: '0px 0px -6% 0px' })
 
-    function reveal(selector: string, frames: Frames = fadeUp, duration = 420, stagger = 0, initialDelay = 0, anchorSelector?: string): void {
+    function reveal(selector: string, frames: Frames = fadeUp, duration = 600, stagger = 0, initialDelay = 0, anchorSelector?: string): void {
       document.querySelectorAll<HTMLElement>(selector).forEach((element, index) => {
         const animation = element.animate(typeof frames === 'function' ? frames(element) : frames, {
           duration, delay: initialDelay + (index % 4) * stagger, easing: easeOut, fill: 'both',
@@ -103,10 +102,13 @@ export function usePageMotion(): void {
     const lines: Frames = element => {
       const lineHeight = parseFloat(getComputedStyle(element).lineHeight)
       const count = Math.max(1, Math.round(element.offsetHeight / lineHeight))
-      const frames: Keyframe[] = [{ clipPath: 'inset(0 0 100% 0)', offset: 0 }]
+      const mask = { maskImage: 'linear-gradient(#000,#000)', maskRepeat: 'no-repeat', maskPosition: 'top left' }
+      // A transparent mask keeps the layout observable; clip-path would prevent
+      // the text itself from intersecting until it was already revealed.
+      const frames: Keyframe[] = [{ ...mask, maskSize: '100% 0%', offset: 0 }]
       for (let line = 1; line <= count; line++) {
-        frames.push({ clipPath: `inset(0 0 ${100 * (1 - (line - 1) / count)}% 0)`, offset: (line - .7) / count })
-        frames.push({ clipPath: `inset(0 0 ${100 * (1 - line / count)}% 0)`, offset: line / count })
+        frames.push({ ...mask, maskSize: `100% ${100 * (line - 1) / count}%`, offset: (line - .7) / count })
+        frames.push({ ...mask, maskSize: `100% ${100 * line / count}%`, offset: line / count })
       }
       return frames
     }
@@ -119,16 +121,16 @@ export function usePageMotion(): void {
     reveal('.hero-details>.muted', fadeUp, 600, 0, 360)
     reveal('.hero-cta,.mobile-hero-cta', fadeUp, 550, 0, 440)
     reveal('.hero>.hero-art:first-child', [{ clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0 0)' }], 1200, 0, 0, '.hero')
-    reveal('.about h2', lines, 550, 0, 0, '.about')
-    reveal('.about>p', lines, 550, 0, 60, '.about')
-    reveal('.forbes-inner', fadeIn, 420)
-    reveal('.program .section-title,.speakers .section-title,.location-heading,.faq h2', fadeIn, 380)
-    reveal('.program-list>li', fadeUp, 400, 40)
-    reveal('.speaker-card', fadeIn, 380, 35)
-    reveal('.contact-panel,.registration-form', fadeIn, 440, 70)
-    reveal('.route-details>article', fadeIn, 400, 40)
+    reveal('.about h2', lines, 720)
+    reveal('.about>p', lines, 720, 0, 60)
+    reveal('.forbes-inner', fadeUp, 600)
+    reveal('.program .section-title,.speakers .section-title,.location-heading,.faq h2', fadeUp, 560)
+    reveal('.program-list>li', fadeUp, 560, 60)
+    reveal('.speaker-card', fadeUp, 560, 50)
+    reveal('.contact-panel,.registration-form', fadeUp, 620, 90)
+    reveal('.route-details>article', fadeUp, 560, 60)
     reveal('.map-link img', [{ opacity: .65, transform: 'scale(1.05)' }, { opacity: 1, transform: 'none' }], 900)
-    reveal('.faq-item', fadeIn, 380, 30)
+    reveal('.faq-item', fadeUp, 560, 50)
     document.addEventListener('focusin', onFocus)
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onScroll, { passive: true })
