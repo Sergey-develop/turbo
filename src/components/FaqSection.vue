@@ -13,7 +13,7 @@ const questions: { question: string; answer: string }[] = [
       <h2>часто задаваемые<br><span class="orange">вопросы</span></h2>
       <div class="faq-list">
         <div v-for="(item, i) in questions" :key="item.question" class="faq-item">
-          <h3><button :id="`question-${i}`" :aria-expanded="opened === i" :aria-controls="`answer-${i}`" @click="opened = opened === i ? null : i">{{ item.question }}<span class="faq-sign" aria-hidden="true">{{ opened === i ? '−' : '+' }}</span></button></h3>
+          <h3><button :id="`question-${i}`" :aria-expanded="opened === i" :aria-controls="`answer-${i}`" @click="opened = opened === i ? null : i">{{ item.question }}<span class="faq-sign" :class="{ 'is-open': opened === i }" aria-hidden="true"></span></button></h3>
           <div :id="`answer-${i}`" class="faq-answer" :class="{ 'is-open': opened === i }" role="region" :aria-labelledby="`question-${i}`" :aria-hidden="opened !== i">
             <div class="faq-answer-content"><p>{{ item.answer }}</p></div>
           </div>

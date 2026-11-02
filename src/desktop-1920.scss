@@ -1,0 +1,70 @@
+// Measurements from the supplied 1920 × 10088 export.
+@media (min-width:1600px) {
+  .header { top:40px; }
+  .desktop-nav { gap:42px; }
+  .header-cta { min-width:171px; }
+  .hero { padding-top:116px; }
+  .hero h1 { font-size:140px; letter-spacing:-1.3px; line-height:1.02; }
+  .hero h1 .orange { margin-inline:16px; }
+  .hero-art { top:11px; filter:brightness(.945); }
+  .hood-hotspot { filter:none; }
+  .hero:before { background:linear-gradient(#000 0 230px,transparent 500px); }
+  .hero:after { content:''; position:absolute; z-index:-1; inset:0; pointer-events:none; background:linear-gradient(transparent 800px,rgba(0,0,0,.13) 1300px,rgba(0,0,0,.13) 2300px,transparent 2550px); }
+  .hero-details { padding-top:40px; font-size:32px; letter-spacing:-.5px; }
+  .hero-details>p:first-child { line-height:1.35; }
+  .hero-location { font-size:30px; letter-spacing:-.6px; }
+  .hero-details .muted { margin-top:48px; font-size:26px; line-height:1.2; letter-spacing:-.5px; }
+  .hero-cta { margin-top:50px; }
+  .about h2 { font-size:50px; line-height:1.3; letter-spacing:-1.2px; }
+  .about p { font-size:28px; line-height:34px; letter-spacing:-.1px; max-width:860px; margin-top:68px; color:#aaa; }
+  .forbes img { display:block; width:300px; height:auto; aspect-ratio:101/28; margin-top:10px; }
+  .forbes .muted { font-size:28px; line-height:34px; letter-spacing:0; margin-top:20px; }
+  .forbes h2 { font-size:50px; line-height:1.3; letter-spacing:-1px; margin-top:65px; }
+  .section-title { font-size:60px; letter-spacing:-.75px; }
+  .program .section-title { margin-bottom:82px; }
+  .program-list { border-top:5px solid #fd903b; }
+  .program-list li { padding-top:36px; }
+  .program h3 { letter-spacing:-1px; }
+  .program time { font-size:32px; padding:3px 12px; min-width:144px; }
+  .speakers { background-size:100% auto; background-position:center 12px; padding-top:315px; padding-bottom:241px; }
+  .speakers:before { background:linear-gradient(#0001 15%,#0004 40%,transparent 90%,#000); }
+  .speakers .section-title { margin-bottom:77px; }
+  .speaker-group-title { margin-bottom:24px; }
+  .speaker-group:first-of-type .speaker-group-title { margin-bottom:26px; }
+  .speaker-group+.speaker-group { margin-top:63px; }
+  .speaker-card img { width:388px; max-width:100%; height:537px; left:50%; right:auto; transform:translateX(-50%); top:auto; bottom:0; }
+  .speaker-card.is-expanded img { width:388px; left:auto; right:0; transform:none; }
+  .speaker-info h3 { font-size:30px; }
+  .registration { min-height:852px; }
+  .contact-panel,.registration-form { padding-top:28px; }
+  .contact-panel,.registration-form { padding-bottom:38px; }
+  .contact-panel h2,.registration-form h2 { line-height:1.2; letter-spacing:-.7px; }
+  .form-heading { gap:10px; margin-bottom:193px; }
+  .form-heading p { max-width:none; padding-top:16px; font-size:20px; letter-spacing:-.4px; }
+  .form-fields { column-gap:10px; row-gap:16px; }
+  .contact-details { gap:48px; font-size:30px; letter-spacing:-.4px; }
+  .contact-details span { font-size:26px; }
+  .calendar-button { min-height:54px; margin-top:75px; }
+  .consents { margin-bottom:30px; }
+  .submit-button { min-height:55px; }
+  .location { padding-top:111px; }
+  .location-heading { grid-template-columns:43.8% 56.2%; margin-bottom:71px; }
+  .location h2 { line-height:1.2; letter-spacing:-.9px; }
+  .route-details { grid-template-columns:25.8% 37.8% 36.4%; }
+  .route-details article:last-child { padding-left:106px; }
+  .faq { padding-top:195px; }
+  .faq-content { width:55%; }
+  .faq h2 { letter-spacing:-1.1px; }
+  .faq-list { margin-top:117px; }
+  .faq h3 button { font-size:30px; }
+  .faq-item p { font-size:28px; line-height:34px; letter-spacing:-.4px; }
+  .faq:before { background-position:center 12px; background-size:100% 1101px; }
+  .faq:after { content:''; position:absolute; z-index:-1; inset:0; pointer-events:none; background:linear-gradient(90deg,transparent 35%,rgba(0,0,0,.43) 50%); mask-image:linear-gradient(transparent,#000 15%,#000 85%,transparent); }
+  .footer { padding-top:201px; padding-bottom:223px; }
+  .footer-content { grid-template-columns:45% 17.5% 21.8% 15.7%; font-size:22px; }
+  .footer-event>p { font-size:26px; line-height:40px; letter-spacing:-.3px; }
+  .footer .button { min-height:64px; font-size:20px; font-weight:400; padding-inline:40px; }
+  .footer-nav,.footer-documents,.footer-contacts { gap:8px; }
+  .footer .muted { font-size:22px; }
+  .footer-documents button { font-size:22px; }
+}

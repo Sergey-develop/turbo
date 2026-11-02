@@ -7,6 +7,10 @@ import RegistrationSection from './components/RegistrationSection.vue'
 import LocationSection from './components/LocationSection.vue'
 import FaqSection from './components/FaqSection.vue'
 import SiteFooter from './components/SiteFooter.vue'
+import { usePageMotion } from './usePageMotion'
+import { useSmoothScroll } from './useSmoothScroll'
+useSmoothScroll()
+usePageMotion()
 </script>
 <template>
   <SiteHeader />
