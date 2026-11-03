@@ -33,7 +33,7 @@
   .speaker-group:first-of-type .speaker-group-title { margin-bottom:26px; }
   .speaker-group+.speaker-group { margin-top:63px; }
   .speaker-card img { width:388px; max-width:100%; height:537px; left:50%; right:auto; transform:translateX(-50%); top:auto; bottom:0; }
-  .speaker-card.is-expanded img { width:388px; left:auto; right:0; transform:none; }
+  .speaker-card.is-expanded img { width:388px; left:50%; right:auto; transform:translateX(-50%); }
   .speaker-info h3 { font-size:30px; }
   .registration { min-height:852px; }
   .contact-panel,.registration-form { padding-top:28px; }

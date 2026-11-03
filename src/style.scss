@@ -52,7 +52,7 @@
 .speakers .speaker-group .speaker-grid{grid-template-columns:var(--speaker-columns)}
 .speaker-toggle{position:absolute;inset:0;z-index:3;border:0;border-radius:0;padding:0;background:transparent;cursor:pointer}
 .speaker-toggle:focus-visible{outline:2px solid var(--orange);outline-offset:-3px}
-.speaker-card.is-expanded img{width:65%;left:auto;right:0}
+.speaker-card.is-expanded img{width:65%;left:50%;right:auto;transform:translateX(-50%)}
 .speaker-card.is-expanded .speaker-info{max-width:65%;background:linear-gradient(90deg,#111c,transparent)}
 .speaker-card .speaker-topic{font-size:24px;line-height:1.25;color:#aaa;margin-top:10px;max-width:340px}
 @media(min-width:1024px) and (max-width:1599px){.speaker-card .speaker-topic{font-size:18px}}
