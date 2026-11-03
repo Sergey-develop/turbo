@@ -17,6 +17,41 @@ function positionScan(x: number, y: number): void {
   revealArt.value?.style.setProperty('--scan-y', `${y}px`)
 }
 
+let scanFrame = 0
+let lastFrame = 0
+let scanX = 0
+let scanY = 0
+let targetX = 0
+let targetY = 0
+function animateScan(time: number): void {
+  const dt = Math.min(64, time - lastFrame)
+  lastFrame = time
+  const weight = 1 - Math.exp(-dt / 90)
+  scanX += (targetX - scanX) * weight
+  scanY += (targetY - scanY) * weight
+  positionScan(scanX, scanY)
+  if (Math.hypot(targetX - scanX, targetY - scanY) > .1) {
+    scanFrame = requestAnimationFrame(animateScan)
+  } else {
+    positionScan(targetX, targetY)
+    scanFrame = 0
+  }
+}
+function followPointer(x: number, y: number): void {
+  targetX = x
+  targetY = y
+  if (!scanning.value || matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    cancelAnimationFrame(scanFrame)
+    scanFrame = 0
+    scanX = x
+    scanY = y
+    positionScan(x, y)
+  } else if (!scanFrame) {
+    lastFrame = performance.now()
+    scanFrame = requestAnimationFrame(animateScan)
+  }
+}
+
 function updateGeometry(): void {
   if (!baseArt.value || !revealArt.value || !hotspot.value) return
   const rect = baseArt.value.getBoundingClientRect()
@@ -41,7 +76,7 @@ function updateGeometry(): void {
 function scanAtPointer(event: PointerEvent): void {
   if (!baseArt.value) return
   const rect = baseArt.value.getBoundingClientRect()
-  positionScan(event.clientX - rect.left, event.clientY - rect.top)
+  followPointer(event.clientX - rect.left, event.clientY - rect.top)
   scanning.value = true
 }
 
@@ -60,7 +95,10 @@ onMounted(() => {
   if (baseArt.value) resizeObserver.observe(baseArt.value)
   updateGeometry()
 })
-onBeforeUnmount(() => resizeObserver?.disconnect())
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect()
+  cancelAnimationFrame(scanFrame)
+})
 </script>
 <template>
   <section class="hero">
