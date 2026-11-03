@@ -69,11 +69,12 @@
   .faq-item p { font-size:28px; line-height:34px; letter-spacing:-.4px; }
   .faq:before { background-position:center 12px; background-size:100% 1101px; }
   .faq:after { content:''; position:absolute; z-index:-1; inset:0; pointer-events:none; background:linear-gradient(90deg,transparent 35%,rgba(0,0,0,.43) 50%); mask-image:linear-gradient(transparent,#000 15%,#000 85%,transparent); }
-  .footer { padding-top:201px; padding-bottom:223px; }
-  .footer-content { grid-template-columns:45% 17.5% 21.8% 15.7%; font-size:22px; }
-  .footer-event>p { font-size:26px; line-height:40px; letter-spacing:-.3px; }
-  .footer .button { min-height:64px; font-size:20px; font-weight:400; padding-inline:40px; }
+  .footer { padding-top:201px; padding-bottom:229px; }
+  .footer-content { grid-template-columns:45% 17.5% 21.8% 15.7%; font-size:20px; line-height:26px; }
+  .footer-event>p { font-size:24px; line-height:40px; letter-spacing:-.3px; font-weight:600; margin-top:58px; }
+  .footer .button { min-height:65px; font-size:18px; font-weight:600; padding-inline:39px; border:1px solid #ffffff40; }
+  .footer-datetime { font-size:25px; letter-spacing:-.4px; }
   .footer-nav,.footer-documents,.footer-contacts { gap:8px; }
-  .footer .muted { font-size:22px; }
-  .footer-documents button { font-size:22px; }
+  .footer .muted { font-size:20px; line-height:26px; color:#727272; }
+  .footer-documents button { font-size:20px; line-height:26px; max-width:370px; }
 }

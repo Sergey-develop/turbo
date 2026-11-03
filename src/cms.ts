@@ -33,6 +33,10 @@ export const cms:Directive<HTMLElement,string>={mounted(el,{value}){
  const text=texts[value];if(text===undefined)return
  if(value==='contactEmail'&&el instanceof HTMLAnchorElement&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text))el.href='mailto:'+text
  if(value==='contactPhone'&&el instanceof HTMLAnchorElement)el.href='tel:'+text.replace(/[^+\d]/g,'')
+ if(value==='footerEvent'){
+  const lines=text.split('\n'),match=lines[0]?.match(/^(.*?20\d{2})\s+(.*)$/)
+  if(match){const row=document.createElement('span');row.className='footer-datetime';for(const part of [match[1],match[2]]){const span=document.createElement('span');span.textContent=part;row.append(span)}el.replaceChildren(row);for(const line of lines.slice(1))el.append(document.createElement('br'),document.createTextNode(line));return}
+ }
  // Preserve styled headlines: update their text nodes separately.
  if(value==='heroTitle'){const lines=text.split('\n'),parts=(lines[1]||'').split('_');el.replaceChildren(document.createTextNode(lines[0]||''),document.createElement('br'),document.createTextNode(parts[0]||''));if(parts.length>1){const accent=document.createElement('span');accent.className='orange';accent.textContent='_';el.append(accent,document.createTextNode(parts.slice(1).join('_')))}return}
  const lines=text.split('\n');el.replaceChildren();lines.forEach((line,i)=>{if(i)el.append(document.createElement('br'));if(i===lines.length-1&&['routeTitle','faqTitle'].includes(value)){const span=document.createElement('span');span.className='orange';span.textContent=line;el.append(span)}else el.append(document.createTextNode(line))})
