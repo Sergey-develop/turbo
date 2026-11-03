@@ -48,10 +48,17 @@
   .consents { margin-bottom:30px; }
   .submit-button { min-height:55px; }
   .location { padding-top:111px; }
-  .location-heading { grid-template-columns:43.8% 56.2%; margin-bottom:71px; }
-  .location h2 { line-height:1.2; letter-spacing:-.9px; }
+  .location-heading { grid-template-columns:43.8% 56.2%; margin-bottom:79px; }
+  .location-heading>p { font-size:22px; font-weight:500; padding-top:0; letter-spacing:-.5px; }
+  .location h2 { line-height:1.2; letter-spacing:-.75px; }
   .route-details { grid-template-columns:25.8% 37.8% 36.4%; }
-  .route-details article:last-child { padding-left:106px; }
+  .route-desktop-break { display:block; }
+  .route-details article { padding-top:60px; padding-bottom:60px; font-size:26px; line-height:30px; font-weight:500; letter-spacing:-.5px; }
+  .route-label { gap:19px; margin-bottom:20px; font-size:26px; line-height:32px; }
+  .route-details article>p:last-child { line-height:30px; letter-spacing:-.8px; }
+  .route-details article:nth-child(2)>p:last-child { max-width:510px; }
+  .route-details article:last-child>p:last-child { letter-spacing:-.4px; }
+  .route-details article:last-child { padding-left:105px; padding-right:0; }
   .faq { padding-top:195px; }
   .faq-content { width:55%; }
   .faq h2 { letter-spacing:-1.1px; }
