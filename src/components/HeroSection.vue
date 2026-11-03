@@ -112,6 +112,6 @@ onBeforeUnmount(() => {
     <div class="hood-control" aria-hidden="true"><svg class="scan-icon" viewBox="0 0 32 32"><path d="M12 4H6a2 2 0 0 0-2 2v6m16-8h6a2 2 0 0 1 2 2v6M4 20v6a2 2 0 0 0 2 2h6m16-8v6a2 2 0 0 1-2 2h-6M8 16h16" fill="none" stroke="currentColor" stroke-width="2"/></svg><span><span class="hood-mouse-hint">Наведите курсор<br>и загляните под капот</span><span class="hood-touch-hint">Коснитесь капота<br>и загляните внутрь</span></span></div>
     <a class="button mobile-hero-cta" href="#registration">Регистрация</a>
     <div id="about" class="about container"><h2>Обсудим итоги года через опыт реальных проектов: какие задачи решали клиенты, что сработало и какие подходы могут пригодиться вашему бизнесу.</h2><p>Вы сможете напрямую задать вопросы команде Турбо, обсудить свои ИТ-задачи и познакомиться с планами развития продуктов. А в разговоре с коллегами из других компаний сравнить опыт<br class="wide-break"> и найти идеи для собственных решений.</p></div>
-    <div class="forbes container"><div class="forbes-inner"><img src="/assets/forbes-logo.png" alt="Forbes" width="300" height="108"><p class="muted">Партнёр деловой программы</p><h2>Клиентские кейсы и открытый<br class="wide-break"> диалог с модератором издания</h2></div></div>
+    <div class="forbes container"><div class="forbes-inner"><img src="/assets/forbes-logo.png" alt="Forbes" width="101" height="28"><p class="muted">Партнёр деловой программы</p><h2>Клиентские кейсы и открытый<br class="wide-break"> диалог с модератором издания</h2></div></div>
   </section>
 </template>

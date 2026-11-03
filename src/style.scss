@@ -83,3 +83,7 @@
 .hood-control{pointer-events:none;user-select:none}
 .hood-touch-hint{display:none}
 @media(hover:none){.hood-touch-hint{display:inline}.hood-mouse-hint{display:none}}
+
+/* Keep the partner mark at its native proportions at every breakpoint. */
+.forbes img{height:auto;aspect-ratio:101/28;max-width:100%}
+.forbes h2{letter-spacing:normal}
