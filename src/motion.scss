@@ -2,12 +2,6 @@
 .hero-date,.hero-time,.hero-location { display:inline-block; }
 html.lenis { scroll-behavior:auto!important; }
 .map-link img { transform-origin:60% 64%; }
-.speaker-card:before {
-  content:''; position:absolute; inset:0; pointer-events:none;
-  background:linear-gradient(135deg,rgba(255,79,18,.38),rgba(255,79,18,.08) 60%,transparent);
-  opacity:0; transition:opacity 240ms ease;
-}
-.speaker-card.is-expanded:before { opacity:1; }
 .faq-sign {
   position:relative; width:28px; height:42px; flex-shrink:0;
   &:before,&:after { content:''; position:absolute; top:50%; left:50%; width:26px; height:1px; background:currentColor; transform:translate(-50%,-50%); }

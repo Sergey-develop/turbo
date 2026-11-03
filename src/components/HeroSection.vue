@@ -5,8 +5,8 @@ const revealArt = ref<HTMLDivElement | null>(null)
 const hotspot = ref<HTMLButtonElement | null>(null)
 const scanning = ref(false)
 const hoodOutline: readonly (readonly [number, number])[] = [
-  [1050, 570], [1480, 570], [1680, 630], [1760, 706], [1700, 764],
-  [1606, 792], [1366, 758], [1120, 660], [960, 636],
+  [1060, 588], [1475, 584], [1600, 618], [1675, 674], [1710, 721],
+  [1695, 744], [1630, 768], [1530, 770], [1300, 724], [1100, 660],
 ]
 let imageScale = 1
 let imageLeft = 0
@@ -24,6 +24,9 @@ function updateGeometry(): void {
   const size = style.backgroundSize.split(' ')
   const imageWidth = size[0] === 'auto' ? parseFloat(size[1] ?? '0') * 1920 / 2488 : rect.width
   imageScale = imageWidth / 1920
+  // Both source images use one coordinate system; the open source is taller.
+  revealArt.value.style.backgroundSize = `${imageWidth}px ${2488 * imageScale}px`
+  revealArt.value.style.backgroundPositionY = `${-10 * imageScale}px`
   imageLeft = (rect.width - imageWidth) * parseFloat(style.backgroundPositionX) / 100
   const outline = `polygon(${hoodOutline.map(([x, y]) => `${imageLeft + x * imageScale}px ${y * imageScale}px`).join(',')})`
   revealArt.value.style.clipPath = outline
