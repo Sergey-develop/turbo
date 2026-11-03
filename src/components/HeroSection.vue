@@ -29,7 +29,10 @@ function updateGeometry(): void {
   revealArt.value.style.backgroundPositionY = `${-10 * imageScale}px`
   imageLeft = (rect.width - imageWidth) * parseFloat(style.backgroundPositionX) / 100
   const outline = `polygon(${hoodOutline.map(([x, y]) => `${imageLeft + x * imageScale}px ${y * imageScale}px`).join(',')})`
-  revealArt.value.style.clipPath = outline
+  // Feather the hood boundary as well as the cursor spotlight.
+  const points = hoodOutline.map(([x, y]) => `${imageLeft + x * imageScale},${y * imageScale}`).join(' ')
+  const mask = `<svg xmlns="http://www.w3.org/2000/svg" width="${rect.width}" height="${rect.height}" viewBox="0 0 ${rect.width} ${rect.height}"><defs><filter id="soft" x="-20%" y="-40%" width="140%" height="180%"><feGaussianBlur stdDeviation="${Math.max(2, 10 * imageScale)}"/></filter></defs><polygon points="${points}" fill="white" filter="url(#soft)"/></svg>`
+  revealArt.value.style.setProperty('--hood-mask', `url("data:image/svg+xml,${encodeURIComponent(mask)}")`)
   hotspot.value.style.clipPath = outline
   revealArt.value.style.setProperty('--scan-radius', `${Math.max(62, 170 * imageScale)}px`)
   scanning.value = false

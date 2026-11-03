@@ -77,7 +77,7 @@
 @media(max-width:767px){.speakers{background-position:66% top}}
 
 /* The open engine image is revealed locally under the pointer on the hood. */
-.hero-art-open{mask-image:radial-gradient(circle var(--scan-radius,170px) at var(--scan-x,0px) var(--scan-y,0px),#000 0%,#000 65%,transparent 100%);transition:opacity .18s ease}
+.hero-art-open{mask-image:radial-gradient(circle var(--scan-radius,170px) at var(--scan-x,0px) var(--scan-y,0px),#000 0%,#000 65%,transparent 100%),var(--hood-mask);mask-composite:intersect;transition:opacity .18s ease}
 .hood-hotspot{z-index:0;background:none;border:0;border-radius:0;padding:0;pointer-events:auto;mask-image:none;cursor:crosshair;touch-action:pan-y;clip-path:polygon(0 0,0 0,0 0)}
 .hood-hotspot:focus-visible{outline:0;background:#ff500512}
 .hood-control{pointer-events:none;user-select:none}
