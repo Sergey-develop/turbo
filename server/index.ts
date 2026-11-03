@@ -232,4 +232,9 @@ export async function handle(req:Request,e:Env):Promise<Response>{
   return json({error:'Сервис временно недоступен. Повторите запрос с тем же ключом.'},503)
  }
 }
-export default { async fetch(req:Request,e:Env){if(new URL(req.url).pathname.startsWith('/api/'))return handle(req,e);return e.ASSETS.fetch(req)} }
+export default { async fetch(req:Request,e:Env){
+ const url=new URL(req.url)
+ if(url.pathname.startsWith('/api/'))return handle(req,e)
+ if(url.pathname==='/'||url.pathname==='/admin'||url.pathname.startsWith('/admin/')||url.pathname==='/cancel'){url.pathname='/index.html';return e.ASSETS.fetch(new Request(url,req))}
+ return e.ASSETS.fetch(req)
+} }
