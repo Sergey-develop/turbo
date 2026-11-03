@@ -235,6 +235,6 @@ export async function handle(req:Request,e:Env):Promise<Response>{
 export default { async fetch(req:Request,e:Env){
  const url=new URL(req.url)
  if(url.pathname.startsWith('/api/'))return handle(req,e)
- if(url.pathname==='/'||url.pathname==='/admin'||url.pathname.startsWith('/admin/')||url.pathname==='/cancel'){url.pathname='/index.html';return e.ASSETS.fetch(new Request(url,req))}
+ if(url.pathname==='/'||url.pathname==='/admin'||url.pathname.startsWith('/admin/')||url.pathname==='/cancel'){url.pathname='/';return e.ASSETS.fetch(new Request(url,req))}
  return e.ASSETS.fetch(req)
 } }
