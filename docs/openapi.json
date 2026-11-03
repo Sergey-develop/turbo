@@ -1,0 +1,1635 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Turbo Rave API",
+    "version": "1.0.0",
+    "description": "Same-origin JSON API. Admin identity headers are injected by Sites, never trusted from arbitrary clients. All mutations require same-origin and application/json except binary media."
+  },
+  "servers": [
+    {
+      "url": "/"
+    }
+  ],
+  "paths": {
+    "/api/public/config": {
+      "get": {
+        "summary": "Режим и актуальные версии согласий",
+        "operationId": "get_api_public_config",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        }
+      }
+    },
+    "/api/public/content": {
+      "get": {
+        "summary": "Опубликованный контент; preview=1 требует content",
+        "operationId": "get_api_public_content",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "parameters": [
+          {
+            "name": "preview",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    "/api/registrations": {
+      "post": {
+        "summary": "Идемпотентная регистрация",
+        "operationId": "post_api_registrations",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          },
+          "201": {
+            "description": "Заявка, аудит и почтовые задания сохранены; received=true, cancelUrl"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "surname",
+                  "name",
+                  "company",
+                  "position",
+                  "email",
+                  "phone",
+                  "consent",
+                  "marketing",
+                  "consentVersion",
+                  "marketingVersion"
+                ],
+                "properties": {
+                  "surname": {
+                    "type": "string",
+                    "maxLength": 160
+                  },
+                  "name": {
+                    "type": "string",
+                    "maxLength": 160
+                  },
+                  "company": {
+                    "type": "string",
+                    "maxLength": 160
+                  },
+                  "position": {
+                    "type": "string",
+                    "maxLength": 160
+                  },
+                  "email": {
+                    "type": "string",
+                    "maxLength": 160
+                  },
+                  "phone": {
+                    "type": "string",
+                    "maxLength": 160
+                  },
+                  "consentVersion": {
+                    "type": "string",
+                    "maxLength": 160
+                  },
+                  "marketingVersion": {
+                    "type": "string",
+                    "maxLength": 160
+                  },
+                  "consent": {
+                    "type": "boolean",
+                    "const": true
+                  },
+                  "marketing": {
+                    "type": "boolean"
+                  },
+                  "utm": {
+                    "type": "object",
+                    "properties": {
+                      "utm_source": {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      "utm_medium": {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      "utm_campaign": {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      "utm_term": {
+                        "type": "string",
+                        "maxLength": 200
+                      },
+                      "utm_content": {
+                        "type": "string",
+                        "maxLength": 200
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "Idempotency-Key",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "minLength": 16,
+              "maxLength": 100
+            }
+          }
+        ]
+      }
+    },
+    "/api/cancel": {
+      "post": {
+        "summary": "Отмена по подписанной ссылке",
+        "operationId": "post_api_cancel",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/me": {
+      "get": {
+        "summary": "Текущая роль и полномочия",
+        "operationId": "get_api_admin_me",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "authenticated"
+      }
+    },
+    "/api/admin/initialize": {
+      "post": {
+        "summary": "Однократная инициализация; идемпотентна",
+        "operationId": "post_api_admin_initialize",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "settings",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/settings": {
+      "get": {
+        "summary": "Настройки",
+        "operationId": "get_api_admin_settings",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "settings"
+      },
+      "put": {
+        "summary": "Настройки с контролем версии",
+        "operationId": "put_api_admin_settings",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "settings",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/registrations": {
+      "get": {
+        "summary": "Поиск, фильтры, пагинация по 50",
+        "operationId": "get_api_admin_registrations",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "registrations.read",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "utm_source",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "utm_campaign",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {
+              "type": "integer",
+              "minimum": 0
+            }
+          }
+        ]
+      }
+    },
+    "/api/admin/export": {
+      "get": {
+        "summary": "CSV с серверным перечнем полей",
+        "operationId": "get_api_admin_export",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "export",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "utm_source",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "utm_campaign",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/admin/content": {
+      "get": {
+        "summary": "Черновик",
+        "operationId": "get_api_admin_content",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "content"
+      },
+      "put": {
+        "summary": "Сохранение черновика с версией",
+        "operationId": "put_api_admin_content",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "content",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/content/publish": {
+      "post": {
+        "summary": "Атомарная публикация сохранённой версии",
+        "operationId": "post_api_admin_content_publish",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "content",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/analytics": {
+      "get": {
+        "summary": "Агрегация данных D1",
+        "operationId": "get_api_admin_analytics",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "analytics",
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "utm_source",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "utm_campaign",
+            "in": "query",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/admin/templates": {
+      "get": {
+        "summary": "Шаблоны",
+        "operationId": "get_api_admin_templates",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "templates"
+      },
+      "put": {
+        "summary": "Шаблон с контролем версии",
+        "operationId": "put_api_admin_templates",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "templates",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/templates/test": {
+      "post": {
+        "summary": "Предпросмотр; send=true ставит тест себе в очередь",
+        "operationId": "post_api_admin_templates_test",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "templates",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/mail": {
+      "get": {
+        "summary": "Последние 100 почтовых заданий",
+        "operationId": "get_api_admin_mail",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "mail"
+      }
+    },
+    "/api/admin/mail/run": {
+      "post": {
+        "summary": "Обработать до 10 заданий",
+        "operationId": "post_api_admin_mail_run",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "mail",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/audit": {
+      "get": {
+        "summary": "Последние 200 событий",
+        "operationId": "get_api_admin_audit",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "audit"
+      }
+    },
+    "/api/admin/roles": {
+      "get": {
+        "summary": "Явные назначения ролей",
+        "operationId": "get_api_admin_roles",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "roles"
+      },
+      "put": {
+        "summary": "Назначить роль по email или ID",
+        "operationId": "put_api_admin_roles",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "roles",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Отозвать явную роль",
+        "operationId": "delete_api_admin_roles",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "roles",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/retention": {
+      "post": {
+        "summary": "Предпросмотр удаления; confirm=true удаляет просроченные заявки",
+        "operationId": "post_api_admin_retention",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "retention",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/backup": {
+      "get": {
+        "summary": "Согласованный JSON-снимок 7 таблиц; не включает медиа R2",
+        "operationId": "get_api_admin_backup",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "settings"
+      }
+    },
+    "/api/admin/media": {
+      "post": {
+        "summary": "Загрузить изображение до 5 МБ",
+        "operationId": "post_api_admin_media",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "content",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "image/png": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "image/jpeg": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            },
+            "image/webp": {
+              "schema": {
+                "type": "string",
+                "format": "binary"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/media/{id}": {
+      "get": {
+        "summary": "Опубликованный файл PNG/JPEG/WebP",
+        "operationId": "get_api_media_id",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/internal/mail/dispatch": {
+      "post": {
+        "summary": "Обработка очереди планировщиком",
+        "operationId": "post_api_internal_mail_dispatch",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": true
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "JobRunner": []
+          }
+        ]
+      }
+    },
+    "/api/admin/registrations/{id}/approve": {
+      "post": {
+        "summary": "approve",
+        "operationId": "post_api_admin_registrations_id_approve",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "registrations.write",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "version"
+                ],
+                "properties": {
+                  "version": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/admin/registrations/{id}/reject": {
+      "post": {
+        "summary": "reject",
+        "operationId": "post_api_admin_registrations_id_reject",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "registrations.write",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "version"
+                ],
+                "properties": {
+                  "version": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/admin/registrations/{id}/cancel": {
+      "post": {
+        "summary": "cancel",
+        "operationId": "post_api_admin_registrations_id_cancel",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "registrations.write",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "version"
+                ],
+                "properties": {
+                  "version": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    },
+    "/api/admin/registrations/{id}/checkin": {
+      "post": {
+        "summary": "checkin",
+        "operationId": "post_api_admin_registrations_id_checkin",
+        "responses": {
+          "200": {
+            "description": "Успех"
+          },
+          "400": {
+            "description": "Некорректный запрос"
+          },
+          "401": {
+            "description": "Требуется вход"
+          },
+          "403": {
+            "description": "Недостаточно прав"
+          },
+          "409": {
+            "description": "Конфликт версии / вместимость / режим"
+          },
+          "422": {
+            "description": "Ошибки валидации"
+          },
+          "503": {
+            "description": "Сервис не настроен или временно недоступен"
+          }
+        },
+        "security": [
+          {
+            "PlatformIdentity": [],
+            "PlatformEmail": []
+          }
+        ],
+        "x-rbac-permission": "checkin",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "version"
+                ],
+                "properties": {
+                  "version": {
+                    "type": "integer",
+                    "minimum": 1
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ]
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "PlatformIdentity": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "oai-authenticated-user-id",
+        "description": "Injected exclusively by Sites dispatch after SIWC authentication"
+      },
+      "PlatformEmail": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "oai-authenticated-user-email",
+        "description": "Trusted platform-verified email; supplied by dispatch"
+      },
+      "JobRunner": {
+        "type": "http",
+        "scheme": "bearer",
+        "description": "JOB_RUNNER_SECRET plus platform-level access to private Site"
+      }
+    }
+  }
+}

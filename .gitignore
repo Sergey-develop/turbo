@@ -2,3 +2,13 @@ node_modules/
 dist/
 qa/
 .openai/*credential*
+
+.env
+.env.*
+!.env.example
+.dev.vars*
+.wrangler/
+.sites-runtime/
+.vinext/
+backups/
+*.tsbuildinfo
