@@ -1,0 +1,16 @@
+.footer {
+  position:relative; isolation:isolate; overflow:hidden; background:none;
+  --footer-bg-size:100% auto;
+  --footer-bg-top:calc(100% + 24.53125vw);
+}
+.footer:before {
+  content:''; position:absolute; inset:0; z-index:-2; pointer-events:none;
+  background:url('/assets/footer-background.png') center calc(var(--footer-bg-top) - var(--footer-shift,0px)) / var(--footer-bg-size) no-repeat;
+  filter:grayscale(1);
+}
+.footer:after {
+  content:''; position:absolute; inset:0; z-index:-1; pointer-events:none;
+  background:linear-gradient(#000 0%,#000 42.857%,transparent 78.571%);
+}
+@media(max-width:1023px){.footer{--footer-bg-size:auto 1000px;--footer-bg-top:calc(100% + 390px)}}
+@media(max-width:767px){.footer{--footer-bg-size:auto 650px;--footer-bg-top:calc(100% + 257px)}}

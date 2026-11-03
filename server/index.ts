@@ -139,6 +139,17 @@ export async function api(req:Request,e:Env):Promise<Response>{
   const id=crypto.randomUUID()+'.'+ext[type];await e.BUCKET.put(id,bytes,{httpMetadata:{contentType:type}});await audit(e,a,'media.uploaded',id).run();return json({path:'/api/media/'+id},201)
  }
  if(path==='/api/admin/me'&&method==='GET')return json(a)
+ if(path==='/api/admin/overview'&&method==='GET'){
+  allow(a,'analytics')
+  const batch=await e.DB.batch<Row>([
+   stmt(e,"SELECT COUNT(*) total,COALESCE(SUM(status='pending'),0) pending,COALESCE(SUM(status='approved'),0) approved,COALESCE(SUM(date(created_at,'+3 hours')=date('now','+3 hours')),0) today FROM registrations"),
+   stmt(e,"SELECT COUNT(*) sent FROM mail_jobs WHERE state='sent' AND kind!='test'"),
+   stmt(e,'SELECT data FROM settings WHERE id=1'),
+   ...(a.permissions.includes('registrations.read')?[stmt(e,'SELECT id,data,status,created_at FROM registrations ORDER BY created_at DESC LIMIT 5')]:[]),
+  ])
+  const config=batch[2].results[0] as Row|undefined
+  return json({...batch[0].results[0],...batch[1].results[0],mode:config?JSON.parse(config.data).mode:'closed',latest:batch[3]?.results.map(r=>({...r,data:JSON.parse(String(r.data))}))||[]})
+ }
  if(path==='/api/admin/initialize'&&method==='POST'){allow(a,'settings');await initialize(e,a,await body(req));return json({initialized:true})}
  if(path==='/api/admin/settings'){
   allow(a,'settings');if(method==='GET')return json(await settings(e))

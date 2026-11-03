@@ -3,6 +3,7 @@ import App from './App.vue'
 import './style.scss'
 import './desktop-1920.scss'
 import './motion.scss'
+import './footer.scss'
 import { cms, loadContent } from './cms'
 async function start(){
   if(location.pathname==='/admin'||location.pathname.startsWith('/admin/')){

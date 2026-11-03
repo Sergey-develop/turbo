@@ -22,7 +22,7 @@ export function usePageMotion(): void {
     observedTargets.clear()
     document.querySelectorAll<HTMLElement>('[data-motion-state]').forEach(element => { element.dataset.motionState = 'done' })
     observer?.disconnect()
-    footer?.style.removeProperty('background-position-y')
+    footer?.style.removeProperty('--footer-shift')
   }
 
   function onPreferenceChange(): void {
@@ -35,7 +35,7 @@ export function usePageMotion(): void {
     const rect = footer.getBoundingClientRect()
     if (rect.top > innerHeight || rect.bottom < 0) return
     const progress = Math.max(0, Math.min(1, (innerHeight - rect.top) / Math.min(rect.height, innerHeight)))
-    footer.style.backgroundPositionY = `calc(100% - ${(18 * (1 - progress)).toFixed(2)}px)`
+    footer.style.setProperty('--footer-shift', `${(18 * (1 - progress)).toFixed(2)}px`)
   }
 
   function onScroll(): void {
