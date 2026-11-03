@@ -79,7 +79,7 @@ export function usePageMotion(): void {
         }
         observedTargets.delete(entry.target)
       }
-    }, { threshold: .05, rootMargin: '0px 0px -6% 0px' })
+    }, { threshold: .05, rootMargin: '0px 0px -14% 0px' })
 
     function reveal(selector: string, frames: Frames = fadeUp, duration = 600, stagger = 0, initialDelay = 0, anchorSelector?: string): void {
       document.querySelectorAll<HTMLElement>(selector).forEach((element, index) => {
