@@ -57,7 +57,7 @@
   .route-label { gap:19px; margin-bottom:20px; font-size:26px; line-height:32px; }
   .route-details article>p:last-child { line-height:30px; letter-spacing:-.8px; }
   .route-details article:nth-child(2)>p:last-child { max-width:510px; }
-  .route-details article:last-child>p:last-child { letter-spacing:-.4px; }
+  .route-details article:last-child>p:last-child { letter-spacing:-.4px; font-size:clamp(20px,1.3vw,25px); }
   .route-details article:last-child { padding-left:105px; padding-right:0; }
   .faq { padding-top:195px; }
   .faq-content { width:55%; }
