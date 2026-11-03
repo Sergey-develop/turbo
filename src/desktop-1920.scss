@@ -8,6 +8,8 @@
   .hero h1 .orange { margin-inline:16px; }
   .hero-art { top:11px; filter:brightness(.945); }
   .hood-hotspot { filter:none; }
+  .hood-control { top:808px; width:290px; height:70px; padding:0 28px; gap:28px; background:#000; font-size:16px; line-height:20px; letter-spacing:-.3px; }
+  .hood-control .scan-icon { width:40px; height:40px; }
   .hero:before { background:linear-gradient(#000 0 230px,transparent 500px); }
   .hero:after { content:''; position:absolute; z-index:-1; inset:0; pointer-events:none; background:linear-gradient(transparent 800px,rgba(0,0,0,.13) 1300px,rgba(0,0,0,.13) 2300px,transparent 2550px); }
   .hero-details { padding-top:40px; font-size:32px; letter-spacing:-.5px; }
