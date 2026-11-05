@@ -127,3 +127,15 @@
 .registration-form .form-fields input:-webkit-autofill[aria-invalid=true]:focus-visible{
   box-shadow:inset 0 0 0 1000px var(--orange);
 }
+@media (max-width:767px){
+ .location{display:block;padding:88px 20px 40px}
+ .location-heading{display:block;margin-bottom:35px}
+ .location h2{font-size:30px;line-height:1.2;letter-spacing:-.6px}
+ .route-details{display:block;border:0}
+ .route-details article,.route-details article+article{border:0;border-bottom:1px solid #303030;padding:15px 10px;font-size:16px;line-height:1.25}
+ .route-label{gap:20px;margin-bottom:18px;font-size:16px}
+ .route-icon{width:40px;height:28px}
+ .route-icon img{max-width:20px;max-height:20px}
+ .map-link{height:320px;aspect-ratio:auto;margin-top:5px}
+ .map-route-button{left:10px;bottom:10px}
+}

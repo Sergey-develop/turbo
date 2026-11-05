@@ -4,6 +4,7 @@ import './style.scss'
 import './desktop-1920.scss'
 import './motion.scss'
 import './footer.scss'
+import './mobile-390.scss'
 import { cms, loadContent } from './cms'
 async function start(){
   if(location.pathname==='/admin'||location.pathname.startsWith('/admin/')){
@@ -16,3 +17,4 @@ async function start(){
   }
 }
 void start()
+
