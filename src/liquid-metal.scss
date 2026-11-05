@@ -22,7 +22,7 @@
 .liquid-metal__title span:nth-child(1) { margin-left:3.1%; }
 .liquid-metal__title span:nth-child(2) { margin-left:32%; }
 .liquid-metal__title span:nth-child(3) { margin-left:15%; }
-.liquid-metal__title--color { z-index:3; color:#08bdf5; mix-blend-mode:color; pointer-events:none; }
+.liquid-metal__title--color { z-index:3; color:var(--orange); mix-blend-mode:color; pointer-events:none; }
 .liquid-metal__visual { position:absolute;z-index:1;inset:0 0 auto;aspect-ratio:16/9;pointer-events:none; }
 .liquid-metal__visual img,.liquid-metal__visual canvas { position:absolute;inset:0;width:100%;height:100%;display:block; }
 .liquid-metal__visual img.is-hidden { visibility:hidden; }
