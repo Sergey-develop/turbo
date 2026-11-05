@@ -90,3 +90,6 @@
 .route-desktop-break{display:none}
 
 .footer-datetime{display:inline-flex;flex-wrap:wrap;column-gap:20px}
+
+/* Fade only the speakers background into the black page, leaving cards intact. */
+.speakers::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(to bottom,transparent calc(100% - 260px),#000 100%)}

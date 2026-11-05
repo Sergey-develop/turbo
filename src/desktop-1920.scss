@@ -78,3 +78,7 @@
   .footer .muted { font-size:20px; line-height:26px; color:#727272; }
   .footer-documents button { font-size:20px; line-height:26px; max-width:370px; }
 }
+
+@media (min-width:1600px) {
+  .speakers::after { background:linear-gradient(to bottom, transparent min(calc(98.28125vw - 238px), calc(100% - 260px)), #000 min(calc(98.28125vw + 12px), 100%)); }
+}
