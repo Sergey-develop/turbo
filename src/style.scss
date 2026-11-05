@@ -139,3 +139,7 @@
  .map-link{height:320px;aspect-ratio:auto;margin-top:5px}
  .map-route-button{left:10px;bottom:10px}
 }
+
+@media(max-width:767px){.hood-control{left:50%;transform:translateX(-50%);gap:14px;padding:12px 20px;font-size:14px;min-width:250px;justify-content:center}.hood-control .scan-icon{width:34px;height:34px}}
+
+@media(max-width:767px){.hood-touch-hint{display:inline}.hood-mouse-hint{display:none}}
