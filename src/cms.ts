@@ -1,3 +1,4 @@
+import {apiOrigin} from './api'
 import { reactive, type Directive } from 'vue'
 import { program, speakers } from './content'
 export const questions = reactive([
@@ -22,7 +23,7 @@ faqTitle:'часто задаваемые\nвопросы',
 export const initialContent=()=>({program:program.map(x=>({...x})),speakers:speakers.map(x=>({...x,image:x.image||'/assets/speaker.webp'})),faq:questions.map(x=>({...x})),texts:{...texts}})
 export async function loadContent():Promise<void>{
  const preview=new URLSearchParams(location.search).get('preview')==='1'
- const response=await fetch('/api/public/content'+(preview?'?preview=1':''));if(!response.ok)throw Error('Контент временно недоступен')
+ const response=await fetch(apiOrigin+'/api/public/content'+(preview?'?preview=1':''));if(!response.ok)throw Error('Контент временно недоступен')
  const {content}=await response.json();if(!content)return
  program.splice(0,program.length,...content.program)
  speakers.splice(0,speakers.length,...content.speakers.map((x:object,id:number)=>({...x,id})))

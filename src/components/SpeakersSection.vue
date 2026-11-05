@@ -2,6 +2,7 @@
 import { computed, ref, type CSSProperties } from 'vue'
 import {texts} from '../cms'
 import { speakers, type Speaker } from '../content'
+function imageUrl(path:string) { if(location.hostname!=='sergey-develop.github.io') return path; if((/^\/assets\//).test(path)) return '/turbo'+path; if(path.startsWith('/api/media/')) return 'https://turbo-rave.aopopo11.workers.dev'+path; return path }
 const selectedSpeaker = ref<number | null>(null)
 const hoveredSpeaker = ref<number | null>(null)
 const expandedSpeaker = computed(() => hoveredSpeaker.value ?? selectedSpeaker.value)
@@ -33,7 +34,7 @@ function columns(items: Speaker[]): CSSProperties {
         <div class="speaker-grid" :style="columns(group.items)">
           <article v-for="speaker in group.items" :key="speaker.id" class="speaker-card" :class="{ 'is-expanded': expandedSpeaker === speaker.id }" @pointerenter="hoverSpeaker($event, speaker.id)" @pointerleave="hoveredSpeaker = null">
             <p class="speaker-role">{{ speaker.role }}</p>
-            <img :src="speaker.image || '/assets/speaker.webp'" :alt="speaker.name" loading="lazy" width="388" height="537">
+            <img :src="imageUrl(speaker.image || '/assets/speaker.webp')" :alt="speaker.name" loading="lazy" width="388" height="537">
             <div class="speaker-info">
               <h3 :id="`speaker-name-${speaker.id}`"><span class="desktop-name">{{ speaker.name }}</span><span class="tablet-name">{{ speaker.name }}</span></h3>
               <div :id="`speaker-topic-${speaker.id}`" class="speaker-topic-reveal" :aria-hidden="expandedSpeaker !== speaker.id"><div class="speaker-topic-clip"><p class="speaker-topic">{{ speaker.topic }}</p></div></div>

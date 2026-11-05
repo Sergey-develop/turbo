@@ -12,3 +12,5 @@ qa/
 .vinext/
 backups/
 *.tsbuildinfo
+
+dist-github/

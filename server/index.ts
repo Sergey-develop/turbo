@@ -1,6 +1,7 @@
+import { passwordLogin, passwordLogout, passwordPrincipal } from './password-auth.ts'
 import { defaultSettings, defaultTemplates, permissions, exportable, renderTemplate } from './defaults.ts'
 
-export interface Env { DB:D1Database; BUCKET?:R2Bucket; ASSETS:Fetcher; BOOTSTRAP_ADMIN_EMAILS?:string; CANCEL_SECRET?:string; JOB_RUNNER_SECRET?:string; MAIL_PROVIDER?:string; RESEND_API_KEY?:string; MAIL_FROM?:string; PUBLIC_ORIGIN?:string }
+export interface Env { DB:D1Database; BUCKET?:R2Bucket; ASSETS:Fetcher; BOOTSTRAP_ADMIN_EMAILS?:string; CANCEL_SECRET?:string; JOB_RUNNER_SECRET?:string; MAIL_PROVIDER?:string; RESEND_API_KEY?:string; MAIL_FROM?:string; PUBLIC_ORIGIN?:string; AUTH_MODE?:string; ADMIN_USERNAME?:string; ADMIN_PASSWORD_VERIFIER?:string; LANDING_ORIGIN?:string }
 type Actor={id:string;email:string;role:string;permissions:string[]}
 type Row=Record<string,any>
 class HttpError extends Error { constructor(public status:number,message:string){super(message)} }
@@ -15,6 +16,7 @@ async function write(e:Env,a:Actor,sql:string,args:any[],action:string,resource:
  return results[0].results[0] as Row|undefined
 }
 async function actor(req:Request,e:Env):Promise<Actor>{
+ if(e.AUTH_MODE==='password'){const principal=await passwordPrincipal(req,e);if(!principal)fail(401,'Войдите в панель управления');return {id:principal,email:principal,role:'admin',permissions:permissions.admin}}
  const id=req.headers.get('oai-authenticated-user-id')||''; const email=(req.headers.get('oai-authenticated-user-email')||'').toLowerCase()
  if(!id||!email)fail(401,'Войдите через ChatGPT')
  const roleRow=await first(e,'SELECT role FROM roles WHERE principal IN (?,?) ORDER BY CASE WHEN principal=? THEN 0 ELSE 1 END LIMIT 1',id,email,id)
@@ -67,14 +69,14 @@ async function register(req:Request,e:Env){
  const utm:Row={};for(const k of ['utm_source','utm_medium','utm_campaign','utm_term','utm_content'])if(typeof b.utm?.[k]==='string')utm[k]=b.utm[k].slice(0,200)
  const hash=await digest(JSON.stringify({data,marketing:b.marketing,consentVersion:b.consentVersion,marketingVersion:b.marketingVersion,utm}))
  const previous=await first(e,'SELECT id,request_hash FROM registrations WHERE request_key=?',key)
- if(previous){if(previous.request_hash!==hash)fail(409,'Ключ уже использован для другой заявки');return json({received:true,cancelUrl:`/cancel?id=${previous.id}&token=${await token(e,previous.id)}`},200)}
+ if(previous){if(previous.request_hash!==hash)fail(409,'Ключ уже использован для другой заявки');return json({received:true,cancelUrl:`${e.PUBLIC_ORIGIN||''}/cancel?id=${previous.id}&token=${await token(e,previous.id)}`},200)}
  await rateLimit(req,e)
  if(!e.CANCEL_SECRET)fail(503,'Регистрация ещё не настроена')
  if(b.consentVersion!==s.consentVersion||b.marketingVersion!==s.marketingVersion)fail(409,'Согласия изменились. Обновите страницу.')
  const id=crypto.randomUUID()
  await stmt(e,`INSERT INTO registrations(id,email,data,status,consent_version,consent_text,marketing,marketing_version,marketing_text,utm,request_key,request_hash,actor)
  VALUES(?,?,?,CASE (SELECT json_extract(data,'$.mode') FROM settings WHERE id=1) WHEN 'open' THEN 'approved' WHEN 'waitlist' THEN 'waitlisted' ELSE 'pending' END,?,?,?,?,?,?,?,?,?)`,id,data.email,JSON.stringify(data),s.consentVersion,s.consentText,b.marketing?1:0,s.marketingVersion,s.marketingText,JSON.stringify(utm),key,hash,'visitor').run()
- return json({received:true,cancelUrl:`/cancel?id=${id}&token=${await token(e,id)}`},201)
+ return json({received:true,cancelUrl:`${e.PUBLIC_ORIGIN||''}/cancel?id=${id}&token=${await token(e,id)}`},201)
 }
 function filter(url:URL){const terms:string[]=[],args:string[]=[];for(const k of ['status','utm_source','utm_campaign']){const val=url.searchParams.get(k);if(val){terms.push(k==='status'?'status=?':`json_extract(utm,'$.${k}')=?`);args.push(val.slice(0,200))}}
  const q=url.searchParams.get('q');if(q){terms.push('(email LIKE ? ESCAPE \'\\\' OR data LIKE ? ESCAPE \'\\\')');const escaped=q.slice(0,100).replace(/[\\%_]/g,'\\$&');args.push(`%${escaped}%`,`%${escaped}%`)}return{where:terms.length?' WHERE '+terms.join(' AND '):'',args}}
@@ -104,10 +106,19 @@ async function dispatch(e:Env,a:Actor){
 
 export async function api(req:Request,e:Env):Promise<Response>{
  const url=new URL(req.url),path=url.pathname,method=req.method
+ const publicCrossOrigin=!!e.LANDING_ORIGIN&&req.headers.get('origin')===e.LANDING_ORIGIN&&(['/api/public/config','/api/public/content','/api/registrations'].includes(path))&&!url.searchParams.has('preview')
  if(!['GET','HEAD'].includes(method)){
-  const origin=req.headers.get('origin');if(origin&&origin!==url.origin)fail(403,'Недопустимый источник запроса')
-  if(req.headers.get('sec-fetch-site')==='cross-site')fail(403,'Недопустимый источник запроса')
+  const origin=req.headers.get('origin');if(origin&&origin!==url.origin&&!publicCrossOrigin)fail(403,'Недопустимый источник запроса')
+  if(req.headers.get('sec-fetch-site')==='cross-site'&&!publicCrossOrigin)fail(403,'Недопустимый источник запроса')
   if(path!=='/api/admin/media'&&!req.headers.get('content-type')?.startsWith('application/json'))fail(415,'Требуется application/json')
+ }
+ if(path==='/api/auth/login'&&method==='POST'&&e.AUTH_MODE==='password'){
+  const b=await body(req);const result=await passwordLogin(req,e,String(b.username||''),String(b.password||''))
+  const headers:Record<string,string>={'Cache-Control':'no-store'};if(result.setCookie)headers['Set-Cookie']=result.setCookie
+  return Response.json(result.error?{error:result.error}:{ok:true},{status:result.status,headers})
+ }
+ if(path==='/api/auth/logout'&&method==='POST'&&e.AUTH_MODE==='password'){
+  const value=await passwordLogout(req,e);return Response.json({ok:true},{headers:{'Set-Cookie':value,'Cache-Control':'no-store'}})
  }
  const media=path.match(/^\/api\/media\/([\w-]+\.(png|jpg|webp))$/)
  if(media&&method==='GET'){const file=await e.BUCKET?.get(media[1]);if(!file)fail(404,'Фото не найдено');return new Response(file.body,{headers:{'Content-Type':file.httpMetadata?.contentType||'application/octet-stream','X-Content-Type-Options':'nosniff','Cache-Control':'public,max-age=31536000,immutable'}})}
@@ -138,7 +149,7 @@ export async function api(req:Request,e:Env):Promise<Response>{
   if(!valid)fail(422,'Содержимое файла не соответствует типу')
   const id=crypto.randomUUID()+'.'+ext[type];await e.BUCKET.put(id,bytes,{httpMetadata:{contentType:type}});await audit(e,a,'media.uploaded',id).run();return json({path:'/api/media/'+id},201)
  }
- if(path==='/api/admin/me'&&method==='GET')return json(a)
+ if(path==='/api/admin/me'&&method==='GET')return json({...a,authMode:e.AUTH_MODE||'sites',photoUploadAvailable:!!e.BUCKET})
  if(path==='/api/admin/overview'&&method==='GET'){
   allow(a,'analytics')
   const batch=await e.DB.batch<Row>([
@@ -217,6 +228,7 @@ export async function api(req:Request,e:Env):Promise<Response>{
   return new Response(JSON.stringify({schema:1,createdAt:new Date().toISOString(),tables:Object.fromEntries(tables.map((name,i)=>[name,snapshot[i].results]))}),{headers:{'Content-Type':'application/json','Content-Disposition':'attachment; filename="turbo-rave-backup.json"','Cache-Control':'no-store'}})
  }
  if(path==='/api/admin/roles'){
+  if(e.AUTH_MODE==='password')fail(409,'Отдельные учётные записи пока не настроены')
   allow(a,'roles');if(method==='GET')return json(await all(e,'SELECT * FROM roles'))
   if(method==='PUT'){const b=await body(req),principal=field(b.principal).toLowerCase();if(!permissions[b.role])fail(422,'Неизвестная роль');await e.DB.batch([stmt(e,'INSERT INTO roles(principal,role) VALUES(?,?) ON CONFLICT(principal) DO UPDATE SET role=excluded.role',principal,b.role),audit(e,a,'role.updated',principal)]);return json({saved:true})}
   if(method==='DELETE'){const b=await body(req),principal=field(b.principal).toLowerCase();await e.DB.batch([stmt(e,'DELETE FROM roles WHERE principal=?',principal),audit(e,a,'role.revoked',principal)]);return json({deleted:true})}
@@ -245,7 +257,13 @@ export async function handle(req:Request,e:Env):Promise<Response>{
 }
 export default { async fetch(req:Request,e:Env){
  const url=new URL(req.url)
- if(url.pathname.startsWith('/api/'))return handle(req,e)
+ if(url.pathname.startsWith('/api/')){
+  const origin=req.headers.get('origin');const publicPath=['/api/public/config','/api/public/content','/api/registrations'].includes(url.pathname)&&!url.searchParams.has('preview')
+  const cors=!!e.LANDING_ORIGIN&&origin===e.LANDING_ORIGIN&&publicPath
+  if(req.method==='OPTIONS')return cors?new Response(null,{status:204,headers:{'Access-Control-Allow-Origin':origin!,'Access-Control-Allow-Methods':'GET, POST, OPTIONS','Access-Control-Allow-Headers':'Content-Type, Idempotency-Key','Vary':'Origin'}}):new Response(null,{status:403})
+  const result=await handle(req,e);if(!cors)return result
+  const headers=new Headers(result.headers);headers.set('Access-Control-Allow-Origin',origin!);headers.append('Vary','Origin');return new Response(result.body,{status:result.status,headers})
+ }
  if(url.pathname==='/'||url.pathname==='/admin'||url.pathname.startsWith('/admin/')||url.pathname==='/cancel'){url.pathname='/';return e.ASSETS.fetch(new Request(url,req))}
  return e.ASSETS.fetch(req)
 } }
