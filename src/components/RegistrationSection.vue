@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { reactive, ref, onMounted, watch } from 'vue'
 import { request } from '../api'
+import RegistrationResult from './RegistrationResult.vue'
 interface Registration { surname: string; name: string; company: string; position: string; email: string; phone: string; consent: boolean; marketing: boolean }
 type FieldName = 'surname' | 'name' | 'company' | 'position' | 'email' | 'phone'
 const fields: { key: FieldName; label: string; type: string; autocomplete: string; placeholder?: string }[] = [
@@ -15,6 +16,7 @@ const form = reactive<Registration>({ surname: '', name: '', company: '', positi
 const errors = reactive<Partial<Record<FieldName | 'consent', string>>>({})
 const status = ref('')
 const busy = ref(false)
+const resultState = ref<'success' | 'error' | 'duplicate' | null>(null)
 const formConfig = ref<Record<string, any> | null>(null)
 const cancelUrl = ref('')
 const configLoading=ref(true)
@@ -43,8 +45,13 @@ async function submit(): Promise<void> {
   try{
     const result=await request('registrations',{method:'POST',headers:{'Idempotency-Key':requestKey.value},body:JSON.stringify({...form,utm,consentVersion:formConfig.value.consentVersion,marketingVersion:formConfig.value.marketingVersion})})
     cancelUrl.value=result.cancelUrl||''
-    status.value='Заявка сохранена. Статус участия сообщит организатор. Сохраните ссылку отмены ниже.'
-  }catch(error){status.value=error instanceof Error?error.message:'Не удалось отправить. Повторите попытку.'}
+    status.value=''
+    resultState.value='success'
+  }catch(error){
+    const message=error instanceof Error?error.message:''
+    resultState.value=/заявка уже существует|уже зарегистрирован/i.test(message)?'duplicate':'error'
+    status.value=''
+  }
   finally{busy.value=false}
 
 }
@@ -57,6 +64,17 @@ function addCalendar(): void {
 <template>
   <section id="registration" class="registration">
     <div class="contact-panel"><h2 v-cms="'contactTitle'">вы всегда можете<br> связаться с нами</h2><div class="contact-bottom"><div class="contact-details"><p><span>E-mail</span><a v-cms="'contactEmail'" href="mailto:Email@mail.ru">Email@mail.ru</a></p><p><span>Телефон</span><a v-cms="'contactPhone'" href="tel:+79999999999">+7(999)999-99-99</a></p></div><button class="button calendar-button" @click="addCalendar">Добавить в календарь</button></div></div>
-    <form class="registration-form" novalidate @submit.prevent="submit"><div class="form-heading"><h2 v-cms="'registrationTitle'">пройдите<br>регистрацию</h2><p v-cms="'registrationDescription'">Участие в мероприятии — по предварительному приглашению. Заполните форму, и после рассмотрения заявки мы свяжемся с вами.</p></div><div class="form-fields"><label v-for="field in fields" :key="field.key" :for="field.key">{{ field.label }}<input :id="field.key" v-model="form[field.key]" :type="field.type" :name="field.key" :autocomplete="field.autocomplete" :placeholder="field.placeholder || '-'" required :aria-invalid="!!errors[field.key]" :aria-describedby="errors[field.key] ? `${field.key}-error` : undefined"><span v-if="errors[field.key]" :id="`${field.key}-error`" class="field-error">{{ errors[field.key] }}</span></label></div><div class="consents"><label><input v-model="form.consent" type="checkbox" required :aria-invalid="!!errors.consent">{{ formConfig?.consentText || 'Согласие на обработку персональных данных и фото-видео съемку' }}</label><p v-if="errors.consent" class="field-error">{{ errors.consent }}</p><label><input v-model="form.marketing" type="checkbox">{{ formConfig?.marketingText || 'Согласие на получение информационных и рекламных рассылок' }}</label></div><button class="button submit-button" type="submit" :disabled="busy || !formConfig?.available || !!cancelUrl">{{ busy ? 'Отправляем…' : 'Отправить' }}</button><p v-if="configLoading" class="form-status" role="status">Проверяем доступность регистрации…</p><p v-else-if="formConfig && !formConfig.available" class="form-status">Приём заявок пока закрыт.</p><button v-if="!configLoading && !formConfig" type="button" class="button" @click="loadFormConfig">Проверить регистрацию ещё раз</button><p v-if="status" class="form-status" role="status">{{ status }}</p><a v-if="cancelUrl" class="cancel-link" :href="cancelUrl">Ссылка отмены заявки — сохраните её</a></form>
+    <form class="registration-form" novalidate @submit.prevent="submit"><div class="form-heading"><h2 v-cms="'registrationTitle'">пройдите<br>регистрацию</h2><p v-cms="'registrationDescription'">Участие в мероприятии — по предварительному приглашению. Заполните форму, и после рассмотрения заявки мы свяжемся с вами</p></div><div class="form-fields"><label v-for="field in fields" :key="field.key" :for="field.key">{{ field.label }}<span class="input-border-shell"><input :id="field.key" v-model="form[field.key]" :type="field.type" :name="field.key" :autocomplete="field.autocomplete" :placeholder="field.placeholder || '-'" required :aria-invalid="!!errors[field.key]" :aria-describedby="errors[field.key] ? `${field.key}-error` : undefined"></span><span v-if="errors[field.key]" :id="`${field.key}-error`" class="field-error">{{ errors[field.key] }}</span></label></div><div class="consents"><label><input v-model="form.consent" type="checkbox" required :aria-invalid="!!errors.consent">{{ formConfig?.consentText || 'Согласие на обработку персональных данных и фото-видео съемку' }}</label><p v-if="errors.consent" class="field-error">{{ errors.consent }}</p><label><input v-model="form.marketing" type="checkbox">{{ formConfig?.marketingText || 'Согласие на получение информационных и рекламных рассылок' }}</label></div><div class="form-actions"><button class="button submit-button" type="submit" :disabled="busy || !formConfig?.available || !!cancelUrl">{{ busy ? 'Отправляем…' : 'Отправить' }}</button><p v-if="configLoading" class="form-status" role="status">Проверяем доступность регистрации…</p><p v-else-if="formConfig && !formConfig.available" class="form-status">Приём заявок пока закрыт.</p><button v-if="!configLoading && !formConfig" type="button" class="button" @click="loadFormConfig">Проверить регистрацию ещё раз</button><p v-if="status" class="form-status" role="status">{{ status }}</p><a v-if="cancelUrl" class="cancel-link" :href="cancelUrl">Ссылка отмены заявки — сохраните её</a></div></form>
   </section>
+  <RegistrationResult v-if="resultState" :state="resultState" @close="resultState=null" />
 </template>
+
+<style lang="scss">
+.registration-form .input-border-shell { position:relative; display:block; }
+.registration-form .form-fields .input-border-shell input:focus { border-bottom-color:#ffffff33; }
+.registration-form .form-fields .input-border-shell input[aria-invalid=true]:focus { border-bottom-color:#180600; }
+.registration-form .input-border-shell::after { content:''; position:absolute; bottom:0; left:0; width:100%; height:1px; background:#fff; transform:scaleX(0); transform-origin:center; transition:transform 600ms cubic-bezier(.22,.61,.36,1); pointer-events:none; }
+.registration-form .input-border-shell:focus-within::after { transform:scaleX(1); }
+.registration-form .input-border-shell:has(input[aria-invalid=true])::after { background:#260b00; }
+@media(prefers-reduced-motion:reduce) { .registration-form .input-border-shell::after { transition:none; } }
+</style>

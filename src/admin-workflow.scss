@@ -1,0 +1,28 @@
+.admin-workflow {
+  min-width:0; color:#f4f6fa; font:14px/1.5 Manrope,Arial,sans-serif;
+  h2 { font-size:25px; line-height:1.3; letter-spacing:-.4px; margin:0 0 20px; }
+  h3 { font-size:16px; margin:20px 0 12px; }
+  p { margin:12px 0; color:#a4b1c3; line-height:1.6; max-width:900px; }
+  button { font:inherit; background:#293342; color:#e8edf6; border:1px solid #3b485b; border-radius:8px; padding:10px 15px; cursor:pointer; }
+  button:hover { background:#354255; } button:disabled { opacity:.45; cursor:default; }
+  input,textarea { width:100%; min-width:0; font:inherit; background:#151d28; color:#e8edf6; border:1px solid #3b485b; border-radius:7px; padding:10px 12px; }
+  input[type=checkbox] { width:18px; accent-color:#ff603a; }
+  label { display:flex; flex-direction:column; gap:7px; margin-bottom:16px; }
+  .check-label { flex-direction:row; align-items:center; }
+  form,.workflow-panel { background:#1c2430; border:1px solid #303b4b; border-radius:12px; padding:24px; margin:20px 0; }
+  .fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0 24px; }
+  .actions { display:flex; flex-wrap:wrap; gap:12px; align-items:center; margin:16px 0; }
+  .primary { background:#f65c36; border-color:#f65c36; }
+  .table-wrap { width:100%; overflow:auto; border:1px solid #303b4b; border-radius:12px; margin:20px 0; }
+  table { width:100%; min-width:700px; border-collapse:collapse; font-size:13px; text-align:left; }
+  th { padding:15px; background:#202b39; color:#98a8be; font-size:12px; }
+  td { padding:15px; background:#1c2430; border-top:1px solid #303b4b; vertical-align:top; max-width:320px; overflow-wrap:anywhere; }
+  td button { font-size:12px; margin:4px 4px 4px 0; padding:7px 10px; }
+  small { display:block; color:#97a3b5; margin-top:5px; }
+  .message { padding:12px 16px; border:1px solid #3b485b; border-radius:8px; }
+  .error { color:#ffb4a0; border-color:#a94730; }
+  details { margin:20px 0; } summary { cursor:pointer; }
+  code { overflow-wrap:anywhere; }
+  :focus-visible { outline:2px solid #ff9578; outline-offset:3px; }
+  @media(max-width:640px) { .fields { grid-template-columns:1fr; } form,.workflow-panel { padding:16px; } }
+}

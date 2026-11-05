@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { questions } from '../cms'
+import { questions, withoutFinalPeriod } from '../cms'
 const opened = ref<number | null>(0)
 </script>
 <template>
@@ -9,9 +9,9 @@ const opened = ref<number | null>(0)
       <h2 v-cms="'faqTitle'">часто задаваемые<br><span class="orange">вопросы</span></h2>
       <div class="faq-list">
         <div v-for="(item, i) in questions" :key="item.question" class="faq-item">
-          <h3><button :id="`question-${i}`" :aria-expanded="opened === i" :aria-controls="`answer-${i}`" @click="opened = opened === i ? null : i">{{ item.question }}<span class="faq-sign" :class="{ 'is-open': opened === i }" aria-hidden="true"></span></button></h3>
+          <h3><button :id="`question-${i}`" :aria-expanded="opened === i" :aria-controls="`answer-${i}`" @click="opened = opened === i ? null : i">{{ withoutFinalPeriod(item.question) }}<span class="faq-sign" :class="{ 'is-open': opened === i }" aria-hidden="true"></span></button></h3>
           <div :id="`answer-${i}`" class="faq-answer" :class="{ 'is-open': opened === i }" role="region" :aria-labelledby="`question-${i}`" :aria-hidden="opened !== i">
-            <div class="faq-answer-content"><p>{{ item.answer }}</p></div>
+            <div class="faq-answer-content"><p>{{ withoutFinalPeriod(item.answer) }}</p></div>
           </div>
         </div>
       </div>

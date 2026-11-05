@@ -1,5 +1,5 @@
 import { passwordLogin, passwordLogout, passwordPrincipal } from './password-auth.ts'
-import { defaultSettings, defaultTemplates, permissions, exportable, renderTemplate } from './defaults.ts'
+import { defaultSettings, defaultTemplates, permissions, exportable, renderTemplate, registrationStatusNames } from './defaults.ts'
 
 export interface Env { DB:D1Database; BUCKET?:R2Bucket; ASSETS:Fetcher; BOOTSTRAP_ADMIN_EMAILS?:string; CANCEL_SECRET?:string; JOB_RUNNER_SECRET?:string; MAIL_PROVIDER?:string; RESEND_API_KEY?:string; MAIL_FROM?:string; PUBLIC_ORIGIN?:string; AUTH_MODE?:string; ADMIN_USERNAME?:string; ADMIN_PASSWORD_VERIFIER?:string; LANDING_ORIGIN?:string }
 type Actor={id:string;email:string;role:string;permissions:string[]}
@@ -82,22 +82,25 @@ function filter(url:URL){const terms:string[]=[],args:string[]=[];for(const k of
  const q=url.searchParams.get('q');if(q){terms.push('(email LIKE ? ESCAPE \'\\\' OR data LIKE ? ESCAPE \'\\\')');const escaped=q.slice(0,100).replace(/[\\%_]/g,'\\$&');args.push(`%${escaped}%`,`%${escaped}%`)}return{where:terms.length?' WHERE '+terms.join(' AND '):'',args}}
 function csvCell(value:unknown){let s=String(value??'');if(/^[=+\-@\t\r\n]/.test(s))s="'"+s;return '"'+s.replace(/"/g,'""')+'"'}
 async function dispatch(e:Env,a:Actor){
- const s=await settings(e);if(!s.mailEnabled||e.MAIL_PROVIDER!=='resend'||!e.RESEND_API_KEY||!e.MAIL_FROM)return {processed:0,disabled:true}
+ const s=await settings(e);if(!s.mailEnabled||e.MAIL_PROVIDER!=='resend'||!e.RESEND_API_KEY||!(s.mailFrom||e.MAIL_FROM))return {processed:0,disabled:true}
  // Provider idempotency keys are stable. Ambiguous requests older than 23h require manual reconciliation.
- const now=Date.now();await stmt(e,"UPDATE mail_jobs SET state='queued' WHERE state='sending' AND lease_until<? AND created_at>strftime('%Y-%m-%dT%H:%M:%fZ','now','-23 hours')",now).run()
+ const now=Date.now();await stmt(e,"UPDATE mail_jobs SET state='queued' WHERE state='sending' AND lease_until<? AND first_attempt_at>?",now,now-23*3600000).run()
  let processed=0
  for(let i=0;i<10;i++){
-  const job=await stmt(e,`UPDATE mail_jobs SET state='sending',attempts=attempts+1,lease_until=? WHERE id=(SELECT id FROM mail_jobs WHERE state='queued' AND available_at<=? ORDER BY created_at,CASE WHEN kind='registered' THEN 0 ELSE 1 END LIMIT 1) AND state='queued' RETURNING *`,now+120000,now).first<Row>()
+  const job=await stmt(e,`UPDATE mail_jobs SET state='sending',attempts=attempts+1,first_attempt_at=COALESCE(first_attempt_at,?),lease_until=? WHERE id=(SELECT id FROM mail_jobs WHERE state='queued' AND available_at<=? AND (first_attempt_at IS NULL OR first_attempt_at>${now-23*3600000}) ORDER BY created_at,CASE WHEN kind='registered' THEN 0 ELSE 1 END LIMIT 1) AND state='queued' RETURNING *`,now,now+120000,now).first<Row>()
   if(!job)break
   const reg=job.registration_id?await first(e,'SELECT * FROM registrations WHERE id=?',job.registration_id):null
-  if(job.registration_id&&(!reg||reg.status==='cancelled'||(reg.status==='rejected'&&job.kind!=='rejected'))){await stmt(e,"UPDATE mail_jobs SET state='cancelled' WHERE id=?",job.id).run();continue}
+  if(job.registration_id&&(!reg||reg.status==='cancelled'||(reg.status==='rejected'&&String(job.kind).split(':')[0]!=='rejected'))){await stmt(e,"UPDATE mail_jobs SET state='cancelled' WHERE id=?",job.id).run();continue}
   const data=reg?JSON.parse(reg.data):{},origin=e.PUBLIC_ORIGIN||''
-  const values={name:data.name||'Тест',status:reg?.status||'test',event_url:origin,cancel_url:reg?`${origin}/cancel?id=${reg.id}&token=${await token(e,reg.id)}`:''}
+  const values={name:data.name||'Тест',status:registrationStatusNames[reg?.status]||'Тест',event_url:origin,cancel_url:reg?`${origin}/cancel?id=${reg.id}&token=${await token(e,reg.id)}`:''}
   try{
-   const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${e.RESEND_API_KEY}`,'Content-Type':'application/json','Idempotency-Key':job.id},body:JSON.stringify({from:e.MAIL_FROM,to:job.recipient||reg?.email,subject:renderTemplate(job.subject,values),text:renderTemplate(job.body,values)}),signal:AbortSignal.timeout(20000)})
+   const payload=job.payload||JSON.stringify({from:s.mailFrom||e.MAIL_FROM,to:job.recipient||reg?.email,subject:renderTemplate(job.subject,values),text:renderTemplate(job.body,values)})
+   await stmt(e,'UPDATE mail_jobs SET payload=COALESCE(payload,?) WHERE id=?',payload,job.id).run()
+   const response=await fetch('https://api.resend.com/emails',{method:'POST',headers:{Authorization:`Bearer ${e.RESEND_API_KEY}`,'Content-Type':'application/json','Idempotency-Key':job.id},body:payload,signal:AbortSignal.timeout(20000)})
    if(!response.ok)throw Error(`provider_http_${response.status}`)
    const result=await response.json() as Row
-   await e.DB.batch([stmt(e,"UPDATE mail_jobs SET state='sent',provider_id=?,last_error=NULL WHERE id=?",String(result.id||''),job.id),audit(e,a,'mail.sent',job.id)])
+   if(typeof result.id!=='string'||!result.id)throw Error('provider_missing_message_id')
+   await e.DB.batch([stmt(e,"UPDATE mail_jobs SET state='sent',provider_id=?,last_error=NULL,delivery_status='sent' WHERE id=?",String(result.id||''),job.id),audit(e,a,'mail.sent',job.id)])
   }catch(error){await e.DB.batch([stmt(e,"UPDATE mail_jobs SET state=?,last_error=?,available_at=? WHERE id=?",job.attempts>=5?'failed':'queued',String(error instanceof Error?error.message:'delivery_failed').slice(0,120),now+Math.min(3600000,60000*2**job.attempts),job.id),audit(e,a,'mail.retry',job.id)])}
   processed++
  }
@@ -173,13 +176,78 @@ export async function api(req:Request,e:Env):Promise<Response>{
    if(!Array.isArray(b.exportFields)||b.exportFields.some((x:string)=>!exportable.includes(x)))fail(422,'Неверные поля экспорта')
    if(b.legalApproved){field(b.consentBasis,4000);field(b.marketingBasis,4000)}
    const current=await settings(e);if((b.consentText!==current.consentText&&b.consentVersion===current.consentVersion)||(b.marketingText!==current.marketingText&&b.marketingVersion===current.marketingVersion))fail(422,'Измените версию согласия вместе с текстом')
+   if(b.mailFrom!==undefined&&(typeof b.mailFrom!=='string'||b.mailFrom.length>250||/[\r\n]/.test(b.mailFrom)))fail(422,'Проверьте адрес отправителя')
+   if(b.mailFrom!==undefined&&b.mailFrom!==''&&(!/^[^<>\s@]+@[^<>\s@]+\.[^<>\s@]+$/.test(b.mailFrom)&&!/^.{1,80} <[^<>\s@]+@[^<>\s@]+\.[^<>\s@]+>$/.test(b.mailFrom)))fail(422,'Проверьте адрес отправителя')
    const {version,...data}=b
    const result=await write(e,a,'UPDATE settings SET data=?,version=version+1 WHERE id=1 AND version=? RETURNING version',[JSON.stringify(data),version],'settings.updated','site');if(!result)fail(409,'Настройки изменились; обновите страницу')
    return json(result)
   }
  }
+ if(path==='/api/admin/invitees'){
+  allow(a,method==='GET'?'registrations.read':'registrations.write');
+  if(method==='GET'){
+   const search=(url.searchParams.get('q')||'').slice(0,100).toLowerCase(),page=Math.max(0,Math.floor(Number(url.searchParams.get('page'))||0));
+   const where=" WHERE instr(i.search_text,?)>0";
+   const rows=await all(e,"SELECT i.*,r.status registration_status FROM invitees i LEFT JOIN registrations r ON r.email=i.email"+where+" ORDER BY i.created_at DESC,i.id DESC LIMIT 50 OFFSET ?",search,page*50);
+   return json({rows:rows.map(r=>({...r,data:JSON.parse(r.data)})),total:(await first(e,'SELECT COUNT(*) count FROM invitees i'+where,search))?.count||0});
+  }
+  if(method==='DELETE'){const b=await body(req);await e.DB.batch([stmt(e,'DELETE FROM invitees WHERE id=?',field(b.id,100)),audit(e,a,'invitee.deleted',String(b.id))]);return json({deleted:true})}
+  if(method==='POST'){
+   const b=await body(req);if(!Array.isArray(b.guests)||!b.guests.length||b.guests.length>100)fail(422,'Добавьте от 1 до 100 гостей за один импорт');
+   const guests=b.guests.map((v:Row)=>{
+    if(!v||typeof v!=='object'||Array.isArray(v))fail(422,'Некорректные данные гостя');
+    const data:Row={};for(const key of ['surname','name','email'])data[key]=field(v[key]);
+    data.email=data.email.toLowerCase();if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email))fail(422,'Проверьте email: '+data.email);
+    for(const key of ['company','position','phone'])data[key]=typeof v[key]==='string'?v[key].trim().slice(0,160):'';
+    return data;
+   });
+   const existing=new Set((await all(e,`SELECT email FROM invitees WHERE email IN (${guests.map(()=>'?').join(',')})`,...guests.map(g=>g.email))).map(r=>r.email));
+   const seen=new Set<string>(),duplicates:string[]=[];const fresh:Row[]=[];
+   for(const guest of guests){if(seen.has(guest.email)||existing.has(guest.email))duplicates.push(guest.email);else fresh.push(guest);seen.add(guest.email)}
+   if(b.preview===true)return json({newCount:fresh.length,duplicates,total:guests.length});
+   const inserts=[];
+   for(let offset=0;offset<fresh.length;offset+=20){const chunk=fresh.slice(offset,offset+20);inserts.push(stmt(e,`INSERT OR IGNORE INTO invitees(id,email,data,search_text,actor) VALUES ${chunk.map(()=>'(?,?,?,?,?)').join(',')} RETURNING id`,...chunk.flatMap(g=>[crypto.randomUUID(),g.email,JSON.stringify(g),Object.values(g).join(' ').toLocaleLowerCase('ru-RU'),a.id])))}
+   const results=await e.DB.batch([...inserts,audit(e,a,'invitees.imported',`requested:${guests.length}`)]);
+   const added=results.slice(0,-1).reduce((n,r)=>n+r.results.length,0);
+   return json({added,skipped:guests.length-added},201);
+  }
+ }
+ if(path==='/api/admin/content/history'&&method==='GET'){allow(a,'content');return json(await all(e,'SELECT id,version,created_at FROM content_history ORDER BY id DESC LIMIT 100'))}
+ const historyItem=path.match(/^\/api\/admin\/content\/history\/(\d+)$/);
+ if(historyItem&&method==='GET'){allow(a,'content');const item=await first(e,'SELECT * FROM content_history WHERE id=?',Number(historyItem[1]));if(!item)fail(404,'Версия не найдена');return json({...item,content:JSON.parse(item.data),data:undefined})}
+ if(path==='/api/admin/content/restore'&&method==='POST'){
+  allow(a,'content');const b=await body(req),snapshot=await first(e,'SELECT * FROM content_history WHERE id=?',b.id);if(!snapshot)fail(404,'Версия не найдена');
+  const result=await write(e,a,'UPDATE content SET draft=?,version=version+1 WHERE id=1 AND version=? RETURNING version',[snapshot.data,b.version],'content.restored',String(snapshot.id));if(!result)fail(409,'Контент изменился; обновите страницу');return json(result);
+ }
+ if(path==='/api/admin/mail/config'&&method==='GET'){
+  allow(a,'mail');const s=await settings(e);return json({provider:e.MAIL_PROVIDER||'disabled',keyConfigured:!!e.RESEND_API_KEY,from:s.mailFrom||e.MAIL_FROM||'',enabled:s.mailEnabled,ready:!!(s.mailEnabled&&e.MAIL_PROVIDER==='resend'&&e.RESEND_API_KEY&&(s.mailFrom||e.MAIL_FROM)),siteUrl:e.PUBLIC_ORIGIN||''});
+ }
+ const mailAction=path.match(/^\/api\/admin\/mail\/([^/]+)\/(retry|resend|delivery)$/);
+ if(mailAction&&method==='POST'){
+  allow(a,'mail');const id=decodeURIComponent(mailAction[1]),action=mailAction[2],b=await body(req),job=await first(e,'SELECT * FROM mail_jobs WHERE id=?',id);if(!job)fail(404,'Письмо не найдено');
+  if(action==='delivery'){
+   if(!job.provider_id)fail(409,'Письмо ещё не принято провайдером');if(e.MAIL_PROVIDER!=='resend'||!e.RESEND_API_KEY)fail(409,'Подключите Resend для проверки доставки');
+   const response=await fetch('https://api.resend.com/emails/'+encodeURIComponent(job.provider_id),{headers:{Authorization:`Bearer ${e.RESEND_API_KEY}`},signal:AbortSignal.timeout(15000)});
+   if(!response.ok)fail(502,'Не удалось проверить доставку: HTTP '+response.status);
+   const result=await response.json() as Row;const status=String(result.last_event||'unknown').slice(0,80);
+   await write(e,a,"UPDATE mail_jobs SET delivery_status=?,delivery_checked_at=strftime('%Y-%m-%dT%H:%M:%fZ','now') WHERE id=? RETURNING id",[status,id],'mail.delivery_checked',id);return json({status});
+  }
+  if(job.state==='cancelled')fail(409,'Отменённое письмо нельзя отправлять');
+  if(action==='retry'){
+   if(!['failed','queued','sending'].includes(job.state))fail(409,'Для уже отправленного письма используйте повторную отправку');
+   if(job.state==='sending'&&job.lease_until>Date.now())fail(409,'Отправка ещё выполняется');
+   if(job.first_attempt_at&&job.first_attempt_at<Date.now()-23*3600000)fail(409,'Окно безопасного повтора истекло. Сначала сверьте результат в Resend.');
+   const r=await write(e,a,"UPDATE mail_jobs SET state='queued',available_at=0,last_error=NULL WHERE id=? AND state=? AND (state!='sending' OR lease_until<=?) RETURNING id",[id,job.state,Date.now()],'mail.requeued',id);if(!r)fail(409,'Состояние письма изменилось');return json({queued:true});
+  }
+  if(b.confirm!==true)fail(422,'Подтвердите создание нового письма');
+  if(job.state==='sending'&&job.lease_until>Date.now())fail(409,'Дождитесь завершения отправки');
+  if(job.state!=='sent'&&b.reconciled!==true)fail(422,'Сначала проверьте результат предыдущей попытки у провайдера');
+  const key=field(b.requestKey,100);if(!/^[a-zA-Z0-9_-]{16,100}$/.test(key))fail(422,'Неверный ключ повторной отправки');
+  const newId='resend-'+key,kind=String(job.kind).split(':')[0]+':resend:'+newId;
+  await e.DB.batch([stmt(e,"UPDATE mail_jobs SET state='failed',last_error='Сверено вручную перед новым письмом' WHERE id=? AND state='sending' AND lease_until<=?",id,Date.now()),stmt(e,'INSERT OR IGNORE INTO mail_jobs(id,registration_id,kind,recipient,subject,body) VALUES(?,?,?,?,?,?)',newId,job.registration_id,kind,job.recipient,job.subject,job.body),audit(e,a,'mail.resend_queued',id)]);return json({queued:true,id:newId});
+ }
  if(path==='/api/admin/registrations'&&method==='GET'){
-  allow(a,'registrations.read');const f=filter(url),page=Math.max(0,Math.min(10000,Number(url.searchParams.get('page'))||0));const rows=await all(e,`SELECT id,email,data,status,marketing,utm,created_at,checked_in_at,version FROM registrations${f.where} ORDER BY created_at DESC LIMIT 50 OFFSET ?`,...f.args,page*50)
+  allow(a,'registrations.read');const f=filter(url),page=Math.max(0,Math.min(10000,Math.floor(Number(url.searchParams.get('page'))||0)));const rows=await all(e,`SELECT id,email,data,status,marketing,utm,created_at,checked_in_at,version FROM registrations${f.where} ORDER BY created_at DESC,id DESC LIMIT 50 OFFSET ?`,...f.args,page*50)
   await audit(e,a,'registrations.read',`page:${page}`).run();return json({rows:rows.map(r=>({...r,data:JSON.parse(r.data),utm:JSON.parse(r.utm)})),total:(await first(e,`SELECT COUNT(*) count FROM registrations${f.where}`,...f.args))?.count||0})
  }
  if(path==='/api/admin/export'&&method==='GET'){
@@ -213,15 +281,15 @@ export async function api(req:Request,e:Env):Promise<Response>{
  }
  if(path==='/api/admin/templates/test'&&method==='POST'){
   allow(a,'templates');const b=await body(req),t=await first(e,'SELECT * FROM templates WHERE id=?',field(b.id,80));if(!t)fail(404,'Шаблон не найден')
-  const values={name:'Тестовый гость',status:'approved',event_url:e.PUBLIC_ORIGIN||'',cancel_url:'[тест: ссылка отмены отключена]'}
+  const values={name:'Тестовый гость',status:registrationStatusNames.approved,event_url:e.PUBLIC_ORIGIN||'',cancel_url:'[тест: ссылка отмены отключена]'}
   if(b.send===true){allow(a,'mail');await e.DB.batch([stmt(e,'INSERT INTO mail_jobs(id,kind,recipient,subject,body) VALUES(?,?,?,?,?)',crypto.randomUUID(),'test',a.email,renderTemplate(t.subject,values),renderTemplate(t.body,values)),audit(e,a,'template.test_queued',b.id)])}
   return json({subject:renderTemplate(t.subject,values),body:renderTemplate(t.body,values),queued:b.send===true})
  }
- if(path==='/api/admin/mail'&&method==='GET'){allow(a,'mail');return json(await all(e,'SELECT id,kind,state,attempts,available_at,last_error,created_at FROM mail_jobs ORDER BY created_at DESC LIMIT 100'))}
+ if(path==='/api/admin/mail'&&method==='GET'){allow(a,'mail');return json(await all(e,'SELECT m.id,m.kind,m.state,m.attempts,m.available_at,m.last_error,m.created_at,m.provider_id,m.first_attempt_at,m.lease_until,m.delivery_status,m.delivery_checked_at,COALESCE(m.recipient,r.email) recipient FROM mail_jobs m LEFT JOIN registrations r ON r.id=m.registration_id ORDER BY m.created_at DESC,m.id DESC LIMIT 100'))}
  if(path==='/api/admin/mail/run'&&method==='POST'){allow(a,'mail');return json(await dispatch(e,a))}
  if(path==='/api/admin/audit'&&method==='GET'){allow(a,'audit');return json(await all(e,'SELECT * FROM audit ORDER BY id DESC LIMIT 200'))}
  if(path==='/api/admin/backup'&&method==='GET'){
-  allow(a,'settings');const tables=['settings','roles','content','templates','registrations','mail_jobs','audit']
+  allow(a,'settings');const tables=['settings','roles','content','content_history','templates','registrations','invitees','mail_jobs','audit']
   const snapshot=await e.DB.batch(tables.map(name=>stmt(e,`SELECT * FROM ${name} LIMIT 10001`)))
   if(snapshot.some(x=>x.results.length>10000))fail(422,'Для большой БД запросите резервную копию у администратора хостинга')
   await audit(e,a,'backup.exported','database').run()
@@ -236,8 +304,9 @@ export async function api(req:Request,e:Env):Promise<Response>{
  if(path==='/api/admin/retention'&&method==='POST'){
   allow(a,'retention');const s=await settings(e),b=await body(req);if(!s.retentionDays)fail(409,'Срок хранения не утверждён')
   const rows=await all(e,"SELECT id FROM registrations WHERE created_at<strftime('%Y-%m-%dT%H:%M:%fZ','now',?) AND id NOT IN (SELECT registration_id FROM mail_jobs WHERE state='sending')",`-${s.retentionDays} days`)
-  if(b.confirm!==true)return json({eligible:rows.length})
-  await e.DB.batch([...rows.map(r=>stmt(e,"DELETE FROM registrations WHERE id=? AND id NOT IN (SELECT registration_id FROM mail_jobs WHERE state='sending' AND registration_id IS NOT NULL)",r.id)),audit(e,a,'retention.deleted',`count:${rows.length}`)]);return json({deleted:rows.length})
+  const invites=await all(e,"SELECT id FROM invitees WHERE created_at<strftime('%Y-%m-%dT%H:%M:%fZ','now',?)",`-${s.retentionDays} days`)
+  if(b.confirm!==true)return json({eligible:rows.length+invites.length,registrations:rows.length,invitees:invites.length})
+  await e.DB.batch([...rows.map(r=>stmt(e,"DELETE FROM registrations WHERE id=? AND id NOT IN (SELECT registration_id FROM mail_jobs WHERE state='sending' AND registration_id IS NOT NULL)",r.id)),...invites.map(r=>stmt(e,'DELETE FROM invitees WHERE id=?',r.id)),audit(e,a,'retention.deleted',`registrations:${rows.length};invitees:${invites.length}`)]);return json({deleted:rows.length+invites.length})
  }
  fail(405,'Метод не поддерживается')
 }

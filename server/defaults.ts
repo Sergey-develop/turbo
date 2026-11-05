@@ -19,3 +19,5 @@ export const exportable = ['surname','name','company','position','email','phone'
 export function renderTemplate(text:string, values:Record<string,string>):string {
  return text.replace(/\{\{([a-z_]+)\}\}/g, (_match,key:string) => values[key] ?? '')
 }
+
+export const registrationStatusNames:Record<string,string>={pending:'Ожидает решения',approved:'Участие подтверждено',waitlisted:'Лист ожидания',rejected:'Заявка отклонена',cancelled:'Заявка отменена'}

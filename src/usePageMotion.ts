@@ -54,7 +54,7 @@ export function usePageMotion(): void {
     element.dataset.motionState = 'done'
   }
 
-  onMounted(() => {
+  function initialize(): void {
     media = matchMedia('(prefers-reduced-motion: reduce)')
     footer = document.querySelector<HTMLElement>('.footer')
     media.addEventListener('change', onPreferenceChange)
@@ -81,10 +81,10 @@ export function usePageMotion(): void {
       }
     }, { threshold: .05, rootMargin: '0px 0px -14% 0px' })
 
-    function reveal(selector: string, frames: Frames = fadeUp, duration = 600, stagger = 0, initialDelay = 0, anchorSelector?: string): void {
+    function reveal(selector: string, frames: Frames = fadeUp, duration = 600, stagger = 0, initialDelay = 0, anchorSelector?: string, staggerGroupSize = 4): void {
       document.querySelectorAll<HTMLElement>(selector).forEach((element, index) => {
         const animation = element.animate(typeof frames === 'function' ? frames(element) : frames, {
-          duration, delay: initialDelay + (index % 4) * stagger, easing: easeOut, fill: 'both',
+          duration, delay: initialDelay + (index % staggerGroupSize) * stagger, easing: easeOut, fill: 'both',
         })
         animation.pause()
         animation.currentTime = 0
@@ -110,7 +110,7 @@ export function usePageMotion(): void {
     reveal('.about', fadeUp, 600)
     reveal('.forbes-inner', fadeUp, 600)
     reveal('.program .section-title,.speakers .section-title,.location-heading,.faq h2', fadeUp, 560)
-    reveal('.program-list>li', fadeUp, 560, 60)
+    reveal('.program-list>li', fadeUp, 560, 120, 0, '.program-list', Infinity)
     reveal('.speaker-card', fadeUp, 560, 50)
     reveal('.contact-panel,.registration-form', fadeUp, 620, 90)
     reveal('.route-details>article', fadeUp, 560, 60)
@@ -120,10 +120,17 @@ export function usePageMotion(): void {
     window.addEventListener('scroll', onScroll, { passive: true })
     window.addEventListener('resize', onScroll, { passive: true })
     onScroll()
+  }
+
+  onMounted(() => {
+    if (document.documentElement.hasAttribute('data-site-loading')) {
+      window.addEventListener('site:ready', initialize, { once: true })
+    } else initialize()
   })
 
   onBeforeUnmount(() => {
     disposed = true
+    window.removeEventListener('site:ready', initialize)
     finishAll()
     if (frame) cancelAnimationFrame(frame)
     media?.removeEventListener('change', onPreferenceChange)

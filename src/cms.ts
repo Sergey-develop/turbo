@@ -8,15 +8,15 @@ export const questions = reactive([
 ])
 export const texts:Record<string,string> = reactive({
  heroTitle:'под капотом\nтурбо_рейв',heroDate:'27 ноября 2026',heroTime:'18.30 – 00.00',heroVenue:'Москва, пространство Суперметалл',
- heroDescription:'Клиентский вечер Турбо Облака,\nобъединяющий деловую программу,\nличное общение и электронную музыку.',
- aboutHeading:'Обсудим итоги года через опыт реальных проектов: какие задачи решали клиенты, что сработало и какие подходы могут пригодиться вашему бизнесу.',
- aboutText:'Вы сможете напрямую задать вопросы команде Турбо, обсудить свои ИТ-задачи и познакомиться с планами развития продуктов. А в разговоре с коллегами из других компаний сравнить опыт\nи найти идеи для собственных решений.',
+ heroDescription:'Клиентский вечер Турбо Облака,\nобъединяющий деловую программу,\nличное общение и электронную музыку',
+ aboutHeading:'Обсудим итоги года через опыт реальных проектов: какие задачи решали клиенты, что сработало и какие подходы могут пригодиться вашему бизнесу',
+ aboutText:'Вы сможете напрямую задать вопросы команде Турбо, обсудить свои ИТ-задачи и познакомиться с планами развития продуктов. А в разговоре с коллегами из других компаний сравнить опыт\nи найти идеи для собственных решений',
  forbesLabel:'Партнёр деловой программы',forbesTitle:'Клиентские кейсы и открытый\nдиалог с модератором издания',
  programTitle:'программа мероприятия',speakersTitle:'спикеры',tedTitle:'Выступления в формате TED',discussionTitle:'Клиентская дискуссия с модератором Forbes',
- registrationTitle:'пройдите\nрегистрацию',registrationDescription:'Участие в мероприятии — по предварительному приглашению. Заполните форму, и после рассмотрения заявки мы свяжемся с вами.',
+ registrationTitle:'пройдите\nрегистрацию',registrationDescription:'Участие в мероприятии — по предварительному приглашению. Заполните форму, и после рассмотрения заявки мы свяжемся с вами',
  contactTitle:'вы всегда можете\nсвязаться с нами',contactEmail:'Email@mail.ru',contactPhone:'+7(999)999-99-99',
- routeLabel:'Как добраться',routeTitle:'постройте маршрут\nк площадке',address:'Пространство Суперметалл. 2-я Бауманская ул., 9/23',
- routeWalk:'Метро Бауманская, около 12 минут\nпешком до пространства Суперметалл.',routeCar:'Укажите в навигаторе: 2-я Бауманская ул., 9/23. Рядом есть платная городская парковка',
+ routeLabel:'Как добраться',routeTitle:'постройте маршрут\nк площадке',address:'Пространство Суперметалл.\n2-я Бауманская ул., 9/23',
+ routeWalk:'Метро Бауманская, около 12 минут\nпешком до пространства Суперметалл',routeCar:'Укажите в навигаторе: 2-я Бауманская ул., 9/23. Рядом есть платная городская парковка',
  footerEvent:'27 ноября 2026  18.30 – 00.00\nМосква, пространство Суперметалл',
 faqTitle:'часто задаваемые\nвопросы',
 })
@@ -29,9 +29,23 @@ export async function loadContent():Promise<void>{
  speakers.splice(0,speakers.length,...content.speakers.map((x:object,id:number)=>({...x,id})))
  questions.splice(0,questions.length,...content.faq);Object.assign(texts,content.texts)
 }
+// Keep editorial punctuation and typography consistent for published CMS content too.
+export const withoutFinalPeriod = (text:string):string => text.replace(/\.+\s*$/, '')
+const noFinalPeriod = new Set(['heroDescription','aboutHeading','aboutText','registrationDescription','routeWalk'])
+function displayText(value:string, raw:string):string {
+ let text = noFinalPeriod.has(value) ? withoutFinalPeriod(raw) : raw
+ if(value==='address') text=text.replace(/Суперметалл\.[\s\n]*/, 'Суперметалл.\n')
+ if(value==='aboutHeading'||value==='aboutText') {
+  text=text.replace(/\s*\n\s*/g, ' ')
+  // Bind every one- or two-letter word to the next word, including chains.
+  text=text.replace(/(?<![А-Яа-яЁёA-Za-z])([А-Яа-яЁёA-Za-z]{1,2})[ \t]+/g, '$1\u00a0')
+ }
+ return text
+}
 // Plain text only. Newlines become real line breaks; no arbitrary HTML is accepted.
 export const cms:Directive<HTMLElement,string>={mounted(el,{value}){
- const text=texts[value];if(text===undefined)return
+ const raw=texts[value];if(raw===undefined)return
+ const text=displayText(value,raw)
  if(value==='contactEmail'&&el instanceof HTMLAnchorElement&&/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text))el.href='mailto:'+text
  if(value==='contactPhone'&&el instanceof HTMLAnchorElement)el.href='tel:'+text.replace(/[^+\d]/g,'')
  if(value==='footerEvent'){

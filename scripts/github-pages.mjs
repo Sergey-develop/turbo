@@ -9,7 +9,7 @@ async function visit(dir){
   if(entry.isDirectory())await visit(path)
   else if(['.html','.css','.js'].includes(extname(path))){
    const text=await readFile(path,'utf8')
-   await writeFile(path,text.replaceAll('"/assets/','"/turbo/assets/').replaceAll("'/assets/","'/turbo/assets/").replaceAll('url(/assets/','url(/turbo/assets/'))
+   await writeFile(path,text.replaceAll('"/assets/','"/turbo/assets/').replaceAll("'/assets/","'/turbo/assets/").replaceAll('`/assets/','`/turbo/assets/').replaceAll('url(/assets/','url(/turbo/assets/'))
   }
  }
 }

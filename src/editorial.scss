@@ -1,0 +1,43 @@
+/* Editorial refinements shared by desktop and mobile. */
+.hero .forbes-inner { padding-top:28px; }
+.hero .forbes-inner::before { display:none; }
+.hero .forbes img { width:260px; height:auto; margin-top:0; }
+.hero .forbes .muted { color:#cdcdcd; margin-top:12px; }
+.hero .forbes h2 { margin-top:28px; }
+.form-actions { position:relative; margin-top:auto; }
+.form-actions .submit-button { margin-top:0; }
+@media (min-width:1024px) {
+ .registration-form { padding-bottom:76px; }
+ .contact-panel { padding-bottom:76px; }
+ .form-actions>.form-status { position:absolute; top:100%; left:0; right:0; margin-top:10px; font-size:14px; }
+}
+@media (max-width:767px) {
+ .hero .forbes-inner { padding-top:22px; }
+ .hero .forbes img { width:155px; }
+ .hero .forbes h2 { margin-top:22px; }
+}
+
+@media (min-width:1600px) { .hero .forbes { top:2300px; } }
+@media (min-width:1024px) and (max-width:1599px) {
+ .hero .forbes { top:1900px; }
+ .hero .forbes-inner { margin-left:48%; }
+}
+
+.about p { color: rgb(255 255 255 / 80%); }
+
+.hero .forbes h2 { white-space: nowrap; }
+@media (min-width: 1600px) {
+  .hero .forbes h2 { font-size: clamp(40px, 2.6041667vw, 50px); }
+}
+@media (max-width: 767px) {
+  .hero .forbes h2 { max-width: none; font-size: min(23px, 5.9vw); }
+}
+
+/* First-screen composition from the supplied 1440 px export. */
+@media (min-width: 1024px) and (max-width: 1599px) {
+  .hero h1 { font-size: 118px; line-height: .98; }
+  .hero-art { top: 141px; }
+  .hero::before { background: linear-gradient(#000 0 230px, transparent 500px); }
+  .hero-details { padding-top: 44px; }
+  .hood-control { top: 48.75vw; left: 52.5%; width: 290px; height: 70px; padding: 0 28px; gap: 28px; font-size: 16px; line-height: 20px; letter-spacing: -.3px; }
+}
