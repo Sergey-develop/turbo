@@ -2,6 +2,7 @@
 import { onBeforeUnmount, onMounted, ref } from 'vue'
 const baseArt = ref<HTMLDivElement | null>(null)
 const revealArt = ref<HTMLDivElement | null>(null)
+const scanLayer = ref<HTMLDivElement | null>(null)
 const hotspot = ref<HTMLButtonElement | null>(null)
 const scanning = ref(false)
 const hoodOutline: readonly (readonly [number, number])[] = [
@@ -15,6 +16,8 @@ let resizeObserver: ResizeObserver | undefined
 function positionScan(x: number, y: number): void {
   revealArt.value?.style.setProperty('--scan-x', `${x}px`)
   revealArt.value?.style.setProperty('--scan-y', `${y}px`)
+  scanLayer.value?.style.setProperty('--scan-x', `${x}px`)
+  scanLayer.value?.style.setProperty('--scan-y', `${y}px`)
 }
 
 let scanFrame = 0
@@ -69,7 +72,9 @@ function updateGeometry(): void {
   const mask = `<svg xmlns="http://www.w3.org/2000/svg" width="${rect.width}" height="${rect.height}" viewBox="0 0 ${rect.width} ${rect.height}"><defs><filter id="soft" x="-20%" y="-40%" width="140%" height="180%"><feGaussianBlur stdDeviation="${Math.max(2, 10 * imageScale)}"/></filter></defs><polygon points="${points}" fill="white" filter="url(#soft)"/></svg>`
   revealArt.value.style.setProperty('--hood-mask', `url("data:image/svg+xml,${encodeURIComponent(mask)}")`)
   hotspot.value.style.clipPath = outline
-  revealArt.value.style.setProperty('--scan-radius', `${Math.max(62, 170 * imageScale)}px`)
+  const radius = `${Math.max(42, 86 * imageScale)}px`
+  revealArt.value.style.setProperty('--scan-radius', radius)
+  scanLayer.value?.style.setProperty('--scan-radius', radius)
   scanning.value = false
 }
 
@@ -105,6 +110,7 @@ onBeforeUnmount(() => {
     <div ref="baseArt" class="hero-art" aria-hidden="true"></div>
     <div ref="revealArt" class="hero-art hero-art-open" :class="{ 'is-scanning': scanning }" aria-hidden="true"></div>
     <button ref="hotspot" class="hero-art hood-hotspot" type="button" aria-label="Заглянуть под капот" :aria-pressed="scanning" @pointerenter="scanAtPointer" @pointermove="scanAtPointer" @pointerdown="scanAtPointer" @pointerleave="leaveHood" @pointercancel="scanning = false" @blur="scanning = false" @keydown.esc="scanning = false" @click="scanWithKeyboard"></button>
+    <div ref="scanLayer" class="hero-art hood-scan-layer" :class="{ 'is-scanning': scanning }" aria-hidden="true"><span class="hood-scan-ring"></span></div>
     <div class="hero-heading container">
       <div><h1 v-cms="'heroTitle'">под капотом<br>турбо<span class="orange">_</span>рейв</h1><a class="button hero-cta" href="#registration">Регистрация</a></div>
       <div class="hero-details"><p><span class="hero-date" v-cms="'heroDate'">27 ноября 2026</span>&nbsp; <span class="hero-time" v-cms="'heroTime'">18.30 – 00.00</span><br><span class="hero-location" v-cms="'heroVenue'">Москва, пространство Суперметалл</span></p><p class="muted" v-cms="'heroDescription'">Клиентский вечер Турбо Облака,<br class="wide-break"> объединяющий деловую программу,<br class="wide-break"> личное общение и электронную музыку.</p></div>

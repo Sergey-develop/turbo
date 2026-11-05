@@ -5,7 +5,7 @@
 }
 .footer:before {
   content:''; position:absolute; inset:0; z-index:-2; pointer-events:none;
-  background:url('/assets/footer-background.png') center calc(var(--footer-bg-top) - var(--footer-shift,0px)) / var(--footer-bg-size) no-repeat;
+  background:url('/assets/footer-background.webp') center calc(var(--footer-bg-top) - var(--footer-shift,0px)) / var(--footer-bg-size) no-repeat;
   filter:grayscale(1);
 }
 .footer:after {
