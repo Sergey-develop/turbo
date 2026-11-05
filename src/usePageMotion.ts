@@ -128,7 +128,7 @@ export function usePageMotion(): void {
     reveal('.program-list>li', fadeUp, 560, 60)
     reveal('.speaker-card', fadeUp, 560, 50)
     reveal('.contact-panel,.registration-form', fadeUp, 620, 90)
-    reveal('.route-details>article', fadeUp, 560, 60, 80, '.map-link')
+    reveal('.route-details>article', fadeUp, 560, 60)
     reveal('.map-link iframe', [{ opacity: .75, transform: 'scale(.94)' }, { opacity: 1, transform: 'none' }], 1200, 0, 0, '.map-link')
     reveal('.faq-item', fadeUp, 560, 50)
     document.addEventListener('focusin', onFocus)

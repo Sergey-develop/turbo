@@ -102,28 +102,7 @@
 .map-route-button:focus-visible{outline:3px solid var(--orange);outline-offset:3px}
 @media(min-width:768px) and (max-width:1023px){.map-link{height:690px;aspect-ratio:auto}.map-route-button{left:20px;top:20px}}
 
-/* Route cards remain anchored to the map while it is explored. */
-.map-link{width:100%;min-width:0;aspect-ratio:1840/868;isolation:isolate}
+/* Match the original map section while retaining the live Yandex map. */
+.map-link{width:100%;min-width:0;isolation:isolate}
 .map-link iframe{filter:grayscale(1) brightness(.67)}
-.map-link .route-details{position:absolute;z-index:1;top:86px;left:20px;right:100px;border:0;border-radius:6px;overflow:hidden;background:rgba(12,12,12,.88)}
-.map-link .route-details article{padding:20px 24px;font-size:18px;line-height:1.3}
-.map-link .route-details article+article{padding-left:24px;border-left:1px solid #ffffff28}
-.map-link .route-label{gap:14px;margin-bottom:12px;font-size:18px;line-height:1.2}
-.map-link .route-icon{width:44px;height:38px}
-.map-link .route-details article>p:last-child{font-size:18px;line-height:1.3;letter-spacing:0}
 .map-route-button{z-index:2}
-@media(min-width:768px) and (max-width:1023px){
- .map-link .route-details{top:76px;right:72px;grid-template-columns:repeat(3,minmax(0,1fr))}
- .map-link .route-details article:first-child{grid-row:auto;display:block}
- .map-link .route-details article:last-child{grid-column:auto;border-top:0}
- .map-link .route-details article,.map-link .route-details article+article{padding:14px;font-size:14px}
- .map-link .route-details article>p:last-child,.map-link .route-label{font-size:14px}
- .map-link .route-icon{width:38px;height:34px}
- .map-link .route-label{gap:8px}
- .map-link .route-desktop-break{display:none}
-}
-
-.map-link .route-details article{min-width:0}
-.map-link .route-icon img{width:24px;height:24px;object-fit:contain}
-.map-link .route-details article:last-child>p:last-child{font-size:18px;letter-spacing:0}
-@media(min-width:768px) and (max-width:1023px){.map-link .route-details article:last-child>p:last-child{font-size:14px}}
