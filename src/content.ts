@@ -14,4 +14,4 @@ export const speakers: Speaker[] = Array.from({ length: 8 }, (_, id) => ({
   id, name: id === 2 ? 'Алексей Волков' : 'Артем Волков', role: 'Креативный директор',
   topic: 'Тема доклада спикера Тема доклада спикера Тема доклада спикера Тема доклада спикера Тема доклада спикера',
 }))
-export const routeUrl = 'https://yandex.ru/maps/?text=' + encodeURIComponent('Москва, 2-я Бауманская улица, 9/23, Суперметалл')
+export const routeUrl = 'https://yandex.ru/maps/?rtext=~55.764066%2C37.683365&rtt=auto'

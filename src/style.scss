@@ -93,3 +93,11 @@
 
 /* Fade only the speakers background into the black page, leaving cards intact. */
 .speakers::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;background:linear-gradient(to bottom,transparent calc(100% - 260px),#000 100%)}
+
+/* Interactive Yandex map and an independent route link. */
+.map-link{position:relative;aspect-ratio:1840/868;background:#222}
+.map-link iframe{display:block;width:100%;height:100%;border:0}
+.map-route-button{position:absolute;left:20px;top:20px;display:flex;align-items:center;justify-content:center;min-height:48px;padding:0 28px;background:#fff;color:#111;border-radius:4px;font-size:16px;font-weight:600;transition:background-color .2s ease}
+.map-route-button:hover{background:#e5e5e5}
+.map-route-button:focus-visible{outline:3px solid var(--orange);outline-offset:3px}
+@media(min-width:768px) and (max-width:1023px){.map-link{height:690px;aspect-ratio:auto}.map-route-button{left:20px;top:20px}}

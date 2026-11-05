@@ -129,7 +129,7 @@ export function usePageMotion(): void {
     reveal('.speaker-card', fadeUp, 560, 50)
     reveal('.contact-panel,.registration-form', fadeUp, 620, 90)
     reveal('.route-details>article', fadeUp, 560, 60)
-    reveal('.map-link img', [{ opacity: .65, transform: 'scale(1.05)' }, { opacity: 1, transform: 'none' }], 900)
+    reveal('.map-link', [{ opacity: .65, transform: 'scale(1.05)' }, { opacity: 1, transform: 'none' }], 900)
     reveal('.faq-item', fadeUp, 560, 50)
     document.addEventListener('focusin', onFocus)
     window.addEventListener('scroll', onScroll, { passive: true })
