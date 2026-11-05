@@ -1,7 +1,7 @@
 export const defaultSettings = {
  mode:'closed', capacity:200, maxApplications:null as number|null, rejectionMail:false, checkIn:false,
  legalApproved:false, consentBasis:'', marketingBasis:'', consentVersion:'draft-1', marketingVersion:'draft-1',
- consentText:'Согласие на обработку персональных данных и фото-видео съёмку',
+ consentText:'Согласие на обработку персональных данных и фото-видео съемку',
  marketingText:'Согласие на получение информационных и рекламных рассылок',
  retentionDays:null as number|null, mailEnabled:false,
  exportFields:['surname','name','company','position','email','status','created_at'],
