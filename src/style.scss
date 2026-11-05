@@ -106,3 +106,21 @@
 .map-link{width:100%;min-width:0;isolation:isolate}
 .map-link iframe{filter:grayscale(1) brightness(.67)}
 .map-route-button{z-index:2}
+
+/* Registration fields use their underline as the focus indicator. */
+.registration-form .form-fields input{transition:border-color 180ms ease;caret-color:#fff}
+.registration-form .form-fields input:focus{outline:none;border-bottom-color:rgba(255,255,255,.9)}
+.registration-form .form-fields input:focus-visible{outline:none;border-bottom-color:#fff}
+.registration-form .form-fields input[aria-invalid=true]:focus{border-bottom-color:#180600}
+.registration-form .form-fields input[aria-invalid=true]:focus-visible{border-bottom-color:#180600}
+.registration-form .form-fields input:-webkit-autofill{
+  -webkit-text-fill-color:#fff;
+  caret-color:#fff;
+  box-shadow:inset 0 0 0 1000px var(--orange);
+}
+.registration-form .form-fields input:-webkit-autofill:focus-visible{
+  box-shadow:inset 0 0 0 1000px var(--orange);
+}
+.registration-form .form-fields input:-webkit-autofill[aria-invalid=true]:focus-visible{
+  box-shadow:inset 0 0 0 1000px var(--orange);
+}
