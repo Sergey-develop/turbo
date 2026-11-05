@@ -12,12 +12,12 @@ html.lenis { scroll-behavior:auto!important; }
 .button:active { transform:scale(.98); background:#d83b05; }
 .submit-button:active { background:#333; }
 .calendar-button:active { background:#292929; }
-.faq h3 button,.footer-documents button { transition:color 180ms ease; }
+.faq h3 button,.footer-documents button,.footer-nav a { transition:color 180ms ease; }
 .menu-toggle { transition:background-color 180ms ease; }
 .menu-toggle:active { background:#484848; }
-.faq h3 button:active,.footer-documents button:active { color:var(--orange); }
+.faq h3 button:active,.footer-documents button:active,.footer-nav a:active { color:var(--orange); }
 @media(hover:hover) and (pointer:fine) {
-  .faq h3 button:hover,.footer-documents button:hover { color:var(--orange); }
+  .faq h3 button:hover,.footer-documents button:hover,.footer-nav a:hover { color:var(--orange); }
   .menu-toggle:hover { background:#383838; }
 }
 @media(max-width:767px) { .faq-sign { width:24px; height:32px; &:before,&:after { width:22px; } } }

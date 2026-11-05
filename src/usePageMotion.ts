@@ -99,20 +99,6 @@ export function usePageMotion(): void {
       })
     }
 
-    const lines: Frames = element => {
-      const lineHeight = parseFloat(getComputedStyle(element).lineHeight)
-      const count = Math.max(1, Math.round(element.offsetHeight / lineHeight))
-      const mask = { maskImage: 'linear-gradient(#000,#000)', maskRepeat: 'no-repeat', maskPosition: 'top left' }
-      // A transparent mask keeps the layout observable; clip-path would prevent
-      // the text itself from intersecting until it was already revealed.
-      const frames: Keyframe[] = [{ ...mask, maskSize: '100% 0%', offset: 0 }]
-      for (let line = 1; line <= count; line++) {
-        frames.push({ ...mask, maskSize: `100% ${100 * (line - 1) / count}%`, offset: (line - .7) / count })
-        frames.push({ ...mask, maskSize: `100% ${100 * line / count}%`, offset: line / count })
-      }
-      return frames
-    }
-
     reveal('.header', [{ opacity: 0, transform: 'translateY(-18px)' }, { opacity: 1, transform: 'none' }], 560)
     reveal('.hero h1', fadeUp, 650, 0, 100)
     reveal('.hero-date', fadeUp, 600, 0, 180)
@@ -121,8 +107,7 @@ export function usePageMotion(): void {
     reveal('.hero-details>.muted', fadeUp, 600, 0, 360)
     reveal('.hero-cta,.mobile-hero-cta', fadeUp, 550, 0, 440)
     reveal('.hero>.hero-art:first-child', [{ clipPath: 'inset(0 0 100% 0)' }, { clipPath: 'inset(0 0 0 0)' }], 1200, 0, 0, '.hero')
-    reveal('.about h2', lines, 720)
-    reveal('.about>p', lines, 720, 0, 60)
+    reveal('.about', fadeUp, 600)
     reveal('.forbes-inner', fadeUp, 600)
     reveal('.program .section-title,.speakers .section-title,.location-heading,.faq h2', fadeUp, 560)
     reveal('.program-list>li', fadeUp, 560, 60)
