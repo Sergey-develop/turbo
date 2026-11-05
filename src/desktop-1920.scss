@@ -29,7 +29,7 @@
   .program h3 { letter-spacing:-1px; }
   .program time { font-size:32px; padding:3px 12px; min-width:144px; }
   .speakers { background-size:100% auto; background-position:center 12px; padding-top:315px; padding-bottom:241px; }
-  .speakers:before { background:linear-gradient(#0001 15%,#0004 40%,transparent 90%,#000); }
+  .speakers:before { background:linear-gradient(to bottom,#000 0,transparent 250px,#0004 40%,transparent 90%,#000); }
   .speakers .section-title { margin-bottom:77px; }
   .speaker-group-title { margin-bottom:24px; }
   .speaker-group:first-of-type .speaker-group-title { margin-bottom:26px; }
