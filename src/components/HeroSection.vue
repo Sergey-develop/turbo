@@ -78,7 +78,7 @@ function updateGeometry(): void {
   const touchMargin = isMobile ? 24 : 0
   const outline = `polygon(${carOutline.map(([x, y]) => {
     const hitX = x * imageScale + (x - 1145) / 675 * touchMargin
-    const hitY = y * imageScale + (y - 577) / 291 * touchMargin
+    const hitY = y * imageScale + Math.max(0, (y - 577) / 291) * touchMargin * 1.5
     return `${imageLeft + hitX}px ${hitY}px`
   }).join(',')})`
   // Feather the car boundary as well as the cursor spotlight.
