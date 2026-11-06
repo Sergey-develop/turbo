@@ -47,9 +47,11 @@
 @media (max-width: 767px) {
   .hero::before { height: 380px; background: linear-gradient(#000 0 220px, rgb(0 0 0 / 35%) 300px, transparent 380px); }
   .hero .mobile-hero-cta { top: 696px; }
-  .hero .hood-control { top: 510px; padding: 8px 14px; gap: 10px; min-width: 0; }
+  .hero .hood-control { top: 568px; left: 55.4%; width: 174px; height: 42px; padding: 8px 16px; gap: 14px; min-width: 0; }
+  .hero .hood-control .scan-icon { width: 24px; height: 24px; }
+  .hero .hood-control .hood-scan-lines { display: inline; }
   .hero .hood-touch-hint, .hero .hood-mouse-hint { display: none; }
-  .hero .hood-mobile-hint { display: inline-block; white-space: nowrap; font-size: 12px; }
+  .hero .hood-mobile-hint { display: inline-block; white-space: nowrap; font-size: 10px; line-height: 12px; }
   .hero .hood-hotspot { touch-action: none; }
 }
 
@@ -60,3 +62,5 @@
 .hero .hero-details .muted { color: rgb(255 255 255 / 80%); }
 
 .hood-scan-layer { overflow: clip; }
+
+.hood-scan-lines { display: none; }
