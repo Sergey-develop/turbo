@@ -47,6 +47,7 @@
 @media (max-width: 767px) {
   .hero::before { height: 380px; background: linear-gradient(#000 0 220px, rgb(0 0 0 / 35%) 300px, transparent 380px); }
   .hero .hero-art { top: 298px; }
+  .hero > .hero-art:first-child { mask-image: linear-gradient(to bottom, transparent 0, #000 64px, #000 80%, transparent 100%); }
   .hero .mobile-hero-cta { top: 696px; }
   .hero .hood-control { top: 568px; left: 55.4%; width: 174px; height: 42px; padding: 8px 16px; gap: 14px; min-width: 0; }
   .hero .hood-control .scan-icon { width: 24px; height: 24px; }
