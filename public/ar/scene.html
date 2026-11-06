@@ -1,0 +1,130 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Появление Speedtail — демо</title>
+<style>html,body{margin:0;width:100%;height:100%;background:transparent;overflow:hidden}canvas{display:block;touch-action:none}</style>
+<script type="importmap">
+{ "imports": {
+  "three": "./vendor/build/three.module.js",
+  "three/addons/": "./vendor/examples/jsm/"
+} }
+</script>
+</head>
+<body>
+<script type="module">
+// Демо выпуска v003: ?v=macro|strands — вариант, &t=3.2 — замереть на секунде (проверка), &glb=файл — другой glb.
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
+import { createAppear } from './turbo-appear.js';
+
+addEventListener('error', () => parent.postMessage({ type: 'turbo-ar-error' }, location.origin));
+addEventListener('unhandledrejection', () => parent.postMessage({ type: 'turbo-ar-error' }, location.origin));
+
+const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.5)); renderer.setSize(innerWidth, innerHeight);
+renderer.outputColorSpace = THREE.SRGBColorSpace; renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.1;
+document.body.prepend(renderer.domElement);
+const scene = new THREE.Scene(); scene.background = null; renderer.setClearColor(0x000000, 0);
+const camera = new THREE.PerspectiveCamera(30, innerWidth / innerHeight, 0.02, 200);
+
+// отражения: подземный паркинг (только окружение, фоном не виден) — хром без окружения выглядит чёрным
+function parkingEnv() {
+  const s = new THREE.Scene(), B = c => new THREE.MeshBasicMaterial({ color: new THREE.Color(c, c, c * 1.04) });
+  const room = new THREE.Mesh(new THREE.BoxGeometry(40, 4.2, 40), new THREE.MeshBasicMaterial({ color: new THREE.Color(0.035, 0.036, 0.04), side: THREE.BackSide }));
+  room.position.y = 2.1; s.add(room);
+  const ceil = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), B(0.07)); ceil.rotation.x = Math.PI / 2; ceil.position.y = 3.6; s.add(ceil);
+  const floor = new THREE.Mesh(new THREE.PlaneGeometry(40, 40), B(0.045)); floor.rotation.x = -Math.PI / 2; floor.position.y = -0.01; s.add(floor);
+  const tube = new THREE.MeshBasicMaterial({ color: new THREE.Color(16, 16, 17) });
+  const lamps = new THREE.Group(); lamps.rotation.y = 0.3; s.add(lamps);
+  for (let r = -5; r <= 5; r++) for (const k of [-1, 0, 1]) { const m = new THREE.Mesh(new THREE.BoxGeometry(0.035, 0.03, 9.0), tube); m.position.set(r * 1.7, 3.5, k * 10.2 + (r % 2) * 1.5); lamps.add(m); }
+  const col = B(0.08);
+  for (const x of [-7, 0, 7]) for (const z of [-8, 8]) { const m = new THREE.Mesh(new THREE.BoxGeometry(0.6, 3.6, 0.6), col); m.position.set(x, 1.8, z); s.add(m); }
+  for (const x of [-9, 9]) for (const z of [-3, 3]) { const m = new THREE.Mesh(new THREE.BoxGeometry(0.6, 3.6, 0.6), col); m.position.set(x, 1.8, z); s.add(m); }
+  const warm = new THREE.Mesh(new THREE.PlaneGeometry(0.18, 30), new THREE.MeshBasicMaterial({ color: new THREE.Color(9, 2.2, 0.35) }));
+  warm.rotation.x = -Math.PI / 2; warm.rotation.z = 0.35; warm.position.set(1.4, 0.01, 0); s.add(warm);
+  const pm = new THREE.PMREMGenerator(renderer); s.position.y = -0.6; s.updateMatrixWorld(true);
+  const tex = pm.fromScene(s, 0.015, 0.1, 60).texture; pm.dispose(); return tex;
+}
+scene.environment = parkingEnv();
+scene.add(new THREE.HemisphereLight(0xdfe6ff, 0x0a0806, 0.15));
+function radialTex(stops) {
+  const c = document.createElement('canvas'); c.width = c.height = 256; const g = c.getContext('2d');
+  const gr = g.createRadialGradient(128, 128, 0, 128, 128, 128); for (const [o, col] of stops) gr.addColorStop(o, col);
+  g.fillStyle = gr; g.fillRect(0, 0, 256, 256); return new THREE.CanvasTexture(c);
+}
+const shadow = new THREE.Mesh(new THREE.PlaneGeometry(2.7, 6.0), new THREE.MeshBasicMaterial({ map: radialTex([[0, 'rgba(0,0,0,.85)'], [0.6, 'rgba(0,0,0,.45)'], [1, 'rgba(0,0,0,0)']]), transparent: true, depthWrite: false, opacity: 0 }));
+shadow.rotation.x = -Math.PI / 2; shadow.rotation.z = Math.PI / 2; shadow.position.y = 0.002; scene.add(shadow);
+
+// машина: нос модели (−X) — к зрителю (+Z)
+const holder = new THREE.Group(); holder.rotation.y = Math.PI / 2; holder.scale.setScalar(1.15); scene.add(holder);
+shadow.scale.setScalar(1.15);
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0, 0.5, 0); controls.enableDamping = true; controls.enablePan = false; controls.enableZoom = false; controls.maxPolarAngle = Math.PI * 0.49;
+function wideShot() {                                          // общий план: машина целиком, нос на три четверти
+  camera.aspect = innerWidth > 0 && innerHeight > 0 ? innerWidth / innerHeight : 16 / 9;   // скрытая вкладка: размер 0
+  camera.fov = camera.aspect >= 1 ? 30 : 30 / Math.min(1.6, camera.aspect * 1.25); camera.updateProjectionMatrix();
+  const v = THREE.MathUtils.degToRad(camera.fov), h = 2 * Math.atan(Math.tan(v / 2) * camera.aspect);
+  const dist = (camera.aspect >= 1 ? 2.25 : 2.8) / Math.sin(Math.min(v, h) / 2);
+  camera.position.copy(new THREE.Vector3(-4.2, 0.85, 5.49).normalize().multiplyScalar(dist)).add(controls.target);
+  controls.minDistance = dist * 0.95; controls.maxDistance = dist * 1.3; controls.update();
+}
+wideShot();
+
+const loader = new GLTFLoader(); loader.setMeshoptDecoder(MeshoptDecoder);
+const gltf = await loader.loadAsync('./speedtail.glb');
+holder.add(gltf.scene);
+const ap = createAppear(THREE, { root: gltf.scene, animations: gltf.animations, camera, target: controls.target, options: { dolly: { k: 1.15, yaw: 0.12, ky: 1 } } });
+
+let t0 = 0;
+function play() {
+  t0 = performance.now(); ap.start('strands'); controls.enabled = false;
+}
+const takeOver = () => { if (ap.state.cameraActive) { ap.release(); controls.enabled = true; } };
+renderer.domElement.addEventListener('pointerdown', takeOver, { capture: true });
+renderer.domElement.addEventListener('wheel', takeOver, { capture: true, passive: true });
+addEventListener('resize', () => { if (!innerWidth || !innerHeight) return; renderer.setSize(innerWidth, innerHeight);  if (!ap.state.cameraActive) wideShot(); });
+ap.start('strands'); ap.update(25); controls.update();
+let playing = false;
+const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const previewMaterials = new Map();
+gltf.scene.traverse(object => {
+  for (const material of (object.material ? (Array.isArray(object.material) ? object.material : [object.material]) : [])) {
+    if (previewMaterials.has(material)) continue;
+    previewMaterials.set(material, { color: material.color?.clone(), emissive: material.emissive?.clone(), emissiveIntensity: material.emissiveIntensity });
+    material.color?.set(0xff5000);
+    material.emissive?.set(0xff3000);
+    material.emissiveIntensity = 0.18;
+  }
+});
+function restoreMaterials() {
+  for (const [material, original] of previewMaterials) {
+    if (original.color) material.color.copy(original.color);
+    if (original.emissive) material.emissive.copy(original.emissive);
+    material.emissiveIntensity = original.emissiveIntensity;
+  }
+}
+renderer.domElement.addEventListener('webglcontextlost', () => parent.postMessage({ type: 'turbo-ar-error' }, location.origin));
+addEventListener('message', event => {
+  if (event.source !== parent || event.origin !== location.origin) return;
+  if (event.data?.type === 'turbo-ar-play') { restoreMaterials(); wideShot(); play(); playing = true; }
+});
+renderer.render(scene, camera);
+parent.postMessage({ type: 'turbo-ar-ready' }, location.origin);
+let lastFrame = 0;
+renderer.setAnimationLoop(now => {
+  if (document.hidden || !playing || now - lastFrame < 1000 / 30) return;
+  lastFrame = now;
+  const t = playing && !reducedMotion ? (performance.now() - t0) / 1000 : 25;
+  const st = ap.update(t);
+  shadow.material.opacity = st.shadow;
+  if (!st.cameraActive) { controls.enabled = true; controls.update(); }
+  renderer.render(scene, camera);
+  if (reducedMotion) playing = false;
+});
+</script>
+</body>
+</html>

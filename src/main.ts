@@ -13,6 +13,10 @@ async function start(){
     const {default:Admin}=await import('./AdminApp.vue');createApp(Admin).mount('#app')
   }else if(location.pathname==='/cancel'){
     const {default:Cancel}=await import('./CancelPage.vue');createApp(Cancel).mount('#app')
+  }else if(new URLSearchParams(location.search).get('ar') === 'test'){
+    const {default:Invitation}=await import('./components/ArInvitation.vue')
+    createApp(Invitation).mount('#app')
+    await revealPage()
   }else{
     try{await loadContent()}catch{console.warn('Не удалось загрузить опубликованный контент; показана резервная версия.')}
     setLoadingProgress(5)
