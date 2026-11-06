@@ -26,8 +26,9 @@
 .about p { color: rgb(255 255 255 / 80%); }
 
 .hero .forbes h2 { white-space: nowrap; }
-@media (min-width: 1600px) {
-  .hero .forbes h2 { font-size: clamp(40px, 2.6041667vw, 50px); }
+@media (min-width: 1024px) {
+  .hero .about h2, .hero .forbes h2 { font-size: 45px; }
+  .hero .about p, .hero .forbes .muted { font-size: 24px; }
 }
 @media (max-width: 767px) {
   .hero .forbes h2 { max-width: none; font-size: min(23px, 5.9vw); }
@@ -40,4 +41,16 @@
   .hero::before { background: linear-gradient(#000 0 230px, transparent 500px); }
   .hero-details { padding-top: 44px; }
   .hood-control { top: 48.75vw; left: 52.5%; width: 290px; height: 70px; padding: 0 28px; gap: 28px; font-size: 16px; line-height: 20px; letter-spacing: -.3px; }
+}
+
+.hood-mobile-hint { display: none; }
+@media (max-width: 767px) {
+  .hero .hood-control { top: 510px; padding: 8px 14px; gap: 10px; min-width: 0; }
+  .hero .hood-touch-hint, .hero .hood-mouse-hint { display: none; }
+  .hero .hood-mobile-hint { display: inline-block; white-space: nowrap; font-size: 12px; }
+  .hero .hood-hotspot { touch-action: none; }
+}
+
+@media (max-width: 767px) {
+  .route-details article:last-child { border-bottom: 0; }
 }

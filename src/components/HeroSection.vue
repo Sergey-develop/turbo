@@ -87,8 +87,17 @@ function updateGeometry(): void {
 
 function scanAtPointer(event: PointerEvent): void {
   if (!baseArt.value) return
+  const isMobileTouch = event.pointerType === 'touch' && matchMedia('(max-width: 767px)').matches
+  // Touch implicitly captures the pointer, so check the actual hit area on every move.
+  if (isMobileTouch && document.elementFromPoint(event.clientX, event.clientY) !== hotspot.value) {
+    scanning.value = false
+    cancelAnimationFrame(scanFrame)
+    scanFrame = 0
+    return
+  }
   const rect = baseArt.value.getBoundingClientRect()
-  followPointer(event.clientX - rect.left, event.clientY - rect.top)
+  const touchOffset = isMobileTouch ? 48 : 0
+  followPointer(event.clientX - rect.left, event.clientY - rect.top - touchOffset)
   scanning.value = true
 }
 
@@ -122,7 +131,7 @@ onBeforeUnmount(() => {
       <div><h1 v-cms="'heroTitle'">под капотом<br>турбо<span class="orange">_</span>рейв</h1><a class="button hero-cta" href="#registration">Регистрация</a></div>
       <div class="hero-details"><p><span class="hero-date" v-cms="'heroDate'">27 ноября 2026</span>&nbsp; <span class="hero-time" v-cms="'heroTime'">18.30 – 00.00</span><br><span class="hero-location" v-cms="'heroVenue'">Москва, пространство Суперметалл</span></p><p class="muted" v-cms="'heroDescription'">Клиентский вечер Турбо Облака,<br class="wide-break"> объединяющий деловую программу,<br class="wide-break"> личное общение и электронную музыку</p></div>
     </div>
-    <div class="hood-control" aria-hidden="true"><svg class="scan-icon" viewBox="0 0 32 32"><path d="M12 3H6a3 3 0 0 0-3 3v6m17-9h6a3 3 0 0 1 3 3v6M3 20v6a3 3 0 0 0 3 3h6m17-9v6a3 3 0 0 1-3 3h-6" fill="none" stroke="currentColor" stroke-width="2"/></svg><span><span class="hood-mouse-hint">Наведите курсор<br>на автомобиль</span><span class="hood-touch-hint">Нажмите и загляните<br>под капот</span></span></div>
+    <div class="hood-control" aria-hidden="true"><svg class="scan-icon" viewBox="0 0 32 32"><path d="M12 3H6a3 3 0 0 0-3 3v6m17-9h6a3 3 0 0 1 3 3v6M3 20v6a3 3 0 0 0 3 3h6m17-9v6a3 3 0 0 1-3 3h-6" fill="none" stroke="currentColor" stroke-width="2"/></svg><span><span class="hood-mouse-hint">Наведите курсор<br>на автомобиль</span><span class="hood-touch-hint">Нажмите и загляните<br>под капот</span><span class="hood-mobile-hint">Наведите палец и<br>загляните под капот</span></span></div>
     <a class="button mobile-hero-cta" href="#registration">Регистрация</a>
     <div id="about" class="about container"><h2 v-cms="'aboutHeading'">Обсудим итоги года через опыт реальных проектов: какие задачи решали клиенты, что сработало и какие подходы могут пригодиться вашему бизнесу</h2><p v-cms="'aboutText'">Вы сможете напрямую задать вопросы команде Турбо, обсудить свои ИТ-задачи и познакомиться с планами развития продуктов. А в разговоре с коллегами из других компаний сравнить опыт<br class="wide-break"> и найти идеи для собственных решений</p></div>
     <div class="forbes container"><div class="forbes-inner"><img src="/assets/forbes-logo.svg" alt="Forbes" width="200" height="54"><p class="muted" v-cms="'forbesLabel'">Партнёр деловой программы</p><h2 v-cms="'forbesTitle'">Клиентские кейсы и открытый<br class="wide-break"> диалог с модератором издания</h2></div></div>
