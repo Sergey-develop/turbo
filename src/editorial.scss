@@ -45,6 +45,7 @@
 
 .hood-mobile-hint { display: none; }
 @media (max-width: 767px) {
+  .hero .mobile-hero-cta { top: 696px; }
   .hero .hood-control { top: 510px; padding: 8px 14px; gap: 10px; min-width: 0; }
   .hero .hood-touch-hint, .hero .hood-mouse-hint { display: none; }
   .hero .hood-mobile-hint { display: inline-block; white-space: nowrap; font-size: 12px; }
