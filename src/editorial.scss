@@ -66,3 +66,8 @@
 .hood-scan-layer { overflow: clip; }
 
 .hood-scan-lines { display: none; }
+
+@media (max-width: 767px) {
+  .site-header-shell .header .menu-toggle,
+  .site-header-shell .header .header-cta { border-radius: 999px; }
+}
