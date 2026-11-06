@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import BrandLogo from './BrandLogo.vue'
 import { texts, loadContent } from '../cms'
+const sceneUrl = `${import.meta.env.BASE_URL}ar/scene.html`
 const frame = ref<HTMLIFrameElement>()
 const ready = ref(false)
 const failed = ref(false)
@@ -61,7 +62,7 @@ onBeforeUnmount(() => {
 <template>
   <main class="ar-invitation" :class="{ 'has-started': started }">
     <div class="ar-background" aria-hidden="true"></div>
-    <iframe v-if="!failed" ref="frame" class="ar-scene" src="/ar/scene.html" title="Интерактивная 3D-модель Speedtail" :class="{ 'is-ready': ready }"></iframe>
+    <iframe v-if="!failed" ref="frame" class="ar-scene" :src="sceneUrl" title="Интерактивная 3D-модель Speedtail" :class="{ 'is-ready': ready }"></iframe>
     <header class="ar-header">
       <BrandLogo />
       <button v-if="supportsSpeech" class="ar-sound" :aria-label="muted ? 'Включить озвучку' : 'Выключить озвучку'" :aria-pressed="!muted" @click="toggleSound">
