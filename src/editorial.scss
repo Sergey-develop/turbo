@@ -45,6 +45,7 @@
 
 .hood-mobile-hint { display: none; }
 @media (max-width: 767px) {
+  .hero::before { height: 380px; background: linear-gradient(#000 0 220px, rgb(0 0 0 / 35%) 300px, transparent 380px); }
   .hero .mobile-hero-cta { top: 696px; }
   .hero .hood-control { top: 510px; padding: 8px 14px; gap: 10px; min-width: 0; }
   .hero .hood-touch-hint, .hero .hood-mouse-hint { display: none; }
