@@ -73,7 +73,14 @@ function updateGeometry(): void {
   revealArt.value.style.backgroundSize = `${imageWidth}px ${2755 * imageScale}px`
   revealArt.value.style.backgroundPositionY = '0px'
   imageLeft = (rect.width - imageWidth) * parseFloat(style.backgroundPositionX) / 100
-  const outline = `polygon(${carOutline.map(([x, y]) => `${imageLeft + x * imageScale}px ${y * imageScale}px`).join(',')})`
+  const isMobile = matchMedia('(max-width: 767px)').matches
+  // Give touch gestures a small margin around the car while keeping the reveal mask unchanged.
+  const touchMargin = isMobile ? 24 : 0
+  const outline = `polygon(${carOutline.map(([x, y]) => {
+    const hitX = x * imageScale + (x - 1145) / 675 * touchMargin
+    const hitY = y * imageScale + (y - 577) / 291 * touchMargin
+    return `${imageLeft + hitX}px ${hitY}px`
+  }).join(',')})`
   // Feather the car boundary as well as the cursor spotlight.
   const points = carOutline.map(([x, y]) => `${imageLeft + x * imageScale},${y * imageScale}`).join(' ')
   const mask = `<svg xmlns="http://www.w3.org/2000/svg" width="${rect.width}" height="${rect.height}" viewBox="0 0 ${rect.width} ${rect.height}"><defs><filter id="soft" x="-20%" y="-40%" width="140%" height="180%"><feGaussianBlur stdDeviation="${Math.max(2, 10 * imageScale)}"/></filter></defs><polygon points="${points}" fill="white" filter="url(#soft)"/></svg>`
